@@ -7,7 +7,7 @@ module lsu
     , input  logic [31:0] i_addr
     , input  logic [31:0] i_st_data
     , input  logic [3:0]  i_st_strb // each strobe bit is corresponding to each byte
-    , input  logic        i_mem_wr
+    , input  logic        i_st_mem
     , output logic [31:0] o_ld_data
 
     // I/O
@@ -37,5 +37,6 @@ module lsu
         o_io_hex6 = '0;
         o_io_hex7 = '0;
         o_io_lcd  = '0;
+        o_ld_data = '0;
     end
 endmodule
