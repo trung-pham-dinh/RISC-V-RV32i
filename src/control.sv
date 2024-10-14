@@ -17,7 +17,7 @@ module control
     , output PCSel_e      o_pc_sel
     , output logic        o_inst_vld
 );
-localparam OUT_W = IMMSEL_W+ 1      + 1      + 1      +1+BSEL_W  +ASEL_W  +ALUSEL_W+1       +WBSEL_W; 
+localparam OUT_W =  {IMMSEL_W+1+1+1+1+BSEL_W+ASEL_W+ALUSEL_W+1+WBSEL_W};
 logic [OUT_W-1:0] out_ctrl;
 
 logic is_br;
@@ -174,7 +174,7 @@ always_comb begin
             o_inst_vld = 1'b1;
         end
         default: begin // invalid command
-            out_ctrl = {IMM_I   ,1'b0    ,1'b0    ,1'b0    ,1'b0    ,B_REG   ,A_REG   ,ALU_ADD ,1'b0    ,WB_ALU  };
+            out_ctrl='0;
             o_inst_vld = 1'b0;
         end
     endcase
