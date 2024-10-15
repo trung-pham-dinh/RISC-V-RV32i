@@ -1,8 +1,8 @@
 module lsu 
-    import rv32i_pkg::*;
+    import singlecycle_pkg::*;
 (
       input  logic        i_clk
-    , input  logic        i_rst
+    , input  logic        i_rst_n
 
     , input  logic [31:0] i_addr
     , input  logic [31:0] i_st_data

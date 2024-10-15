@@ -13,6 +13,6 @@ module inst_mem #(
 
     // Init mem
     initial begin
-        $readmemh("../SingleCycle/mem/lui.mem", mem);
+        $readmemh("./../02_test/dump/inst_mem.mem", mem);
     end
 endmodule

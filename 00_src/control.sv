@@ -1,5 +1,5 @@
 module control 
-    import rv32i_pkg::*;
+    import singlecycle_pkg::*;
 (
       input  logic [31:0] i_inst
 
@@ -180,7 +180,10 @@ always_comb begin
     endcase
     {o_imm_sel,o_reg_wen,o_br_un,is_br,is_jp,o_b_sel,o_a_sel,o_alu_sel,o_st_mem,o_wb_sel} = out_ctrl;
 
+end
 
+// Need to split to another always_comb because of this: https://github.com/lowRISC/opentitan/pull/6639
+always_comb begin
     // Calculate o_pc_sel
     if(is_br) begin // branch
         if(i_inst[14]) begin // branch using lt op

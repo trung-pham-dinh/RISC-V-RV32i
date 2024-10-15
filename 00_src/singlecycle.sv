@@ -1,5 +1,5 @@
-module rv32i_single 
-    import rv32i_pkg::*;
+module singlecycle 
+    import singlecycle_pkg::*;
 #(
     parameter INST_MEM_ADDR_W = 10
 )
@@ -7,7 +7,7 @@ module rv32i_single
     // Global clock, acitve on the rising edge
       input  logic        i_clk
     // Global acitve reset
-    , input  logic        i_rst
+    , input  logic        i_rst_n
     // Debug program counter
     , output logic [31:0] o_pc_debug
     // Instruction valid
@@ -75,7 +75,7 @@ module rv32i_single
     logic [31:0] wb_res;
 
     assign o_pc_debug = '0; // temporarily assigned
-//////////////////////////////////////////////////////////////////////////
+///////////////////////t///////////////////////////////////////////////////
 // Control Unit
 //////////////////////////////////////////////////////////////////////////
 
@@ -101,7 +101,7 @@ control control(
 assign pc_4 = 32'(pc + 32'('d4));
 
 always_ff @( posedge i_clk ) begin
-    if(i_rst) begin 
+    if(~i_rst_n) begin 
         pc <= 0;
     end
     else begin
@@ -129,7 +129,7 @@ assign rs2_addr = inst[24:20];
 
 regfile regfile(
     .i_clk     (i_clk   ),   
-    .i_rst     (i_rst   ),   
+    .i_rst_n   (i_rst_n ),   
               
     .i_rs1_addr(rs1_addr),    
     .i_rs2_addr(rs2_addr),    
@@ -181,7 +181,7 @@ branch_comp branch_comp(
 
 lsu lsu(
     .i_clk    (i_clk    ),   
-    .i_rst    (i_rst    ),    
+    .i_rst_n  (i_rst_n  ),    
 
     .i_addr   (alu_res ),  
     .i_st_data(rs2_data ), 

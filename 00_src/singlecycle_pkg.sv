@@ -1,7 +1,8 @@
-`ifndef  RV32IPKG_SV
-`define RV32IPKG_SV
+`ifndef  SINGLECYCLEPKG_SV
+`define SINGLECYCLEPKG_SV
+`timescale 1ns/1ps
 
-package rv32i_pkg;
+package singlecycle_pkg;
 
     localparam FUNCT3_WIDTH = 3;
     localparam FUNCT7_WIDTH = 7;

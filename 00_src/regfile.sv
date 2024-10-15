@@ -1,8 +1,8 @@
 module regfile
-    import rv32i_pkg::*;
+    import singlecycle_pkg::*;
 (
       input  logic i_clk
-    , input  logic i_rst
+    , input  logic i_rst_n
 
     , input  logic [REGIDX_WIDTH-1:0] i_rs1_addr
     , input  logic [REGIDX_WIDTH-1:0] i_rs2_addr
@@ -21,9 +21,9 @@ module regfile
 
     assign regs[0] = '0;
     generate
-        for(genvar i=1; i<32; i++) begin
+        for(genvar i=1; i<32; i++) begin: g_regfile
             always_ff @( posedge i_clk ) begin
-                if(i_rst) begin
+                if(~i_rst_n) begin
                     regs[i] <= '0; 
                 end
                 else begin
