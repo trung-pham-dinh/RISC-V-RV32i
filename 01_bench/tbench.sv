@@ -1,7 +1,7 @@
 `include "timescale.svh"
 
 `define RESETPERIOD 55
-`define FINISH      1005
+`define FINISH      2005
 
 module tbench;
 
