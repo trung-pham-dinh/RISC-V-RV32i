@@ -79,7 +79,7 @@ function logic [31:0] instr_slt(input logic [31:0] a, input logic [31:0] b);
 
     sign_rs1 = {a[31], a};  // Sign extend for signed comparison
     sign_rs2 = {b[31], b};  // Sign extend for signed comparison
-    negative_sign_rs2 = 33'((~sign_rs2) + 32'b1); // Two's complement of usign_rs2
+    negative_sign_rs2 = 33'((~sign_rs2) + 33'b1); // Two's complement of usign_rs2
     sub_sign  = 33'(sign_rs1  + negative_sign_rs2); // Perform subtraction
     return {31'b0,sub_sign[32]};  // MSB indicates result of comparison
 endfunction
@@ -93,7 +93,7 @@ function logic [31:0] instr_sltu(input logic [31:0] a, input logic [31:0] b);
 
     usign_rs1 = {1'b0, a};  // Zero extend for unsigned comparison
     usign_rs2 = {1'b0, b};  // Zero extend for unsigned comparison
-    negative_usign_rs2 = 33'((~usign_rs2) + 32'b1); // Two's complement of usign_rs2
+    negative_usign_rs2 = 33'((~usign_rs2) + 33'b1); // Two's complement of usign_rs2
     sub_usign = 33'(usign_rs1 + negative_usign_rs2); // Perform subtraction
     return {31'b0,sub_usign[32]};  // MSB indicates result of comparison
 endfunction
