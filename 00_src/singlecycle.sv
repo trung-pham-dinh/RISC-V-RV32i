@@ -156,7 +156,7 @@ end
 // Execution (EX)
 //////////////////////////////////////////////////////////////////////////
 
-assign a_operand = (a_sel == A_REG)? rs1_data : pc;
+assign a_operand = (a_sel == A_REG)? rs1_data : (a_sel == A_PC)? pc : '0;
 assign b_operand = (b_sel == B_REG)? rs2_data : imm;
 
 alu alu(
