@@ -23,8 +23,8 @@ always_comb begin
     sign_rs1     = {i_rs1_data[31], i_rs1_data};
     sign_rs2     = {i_rs2_data[31], i_rs2_data};
 
-    negative_usign_rs2 = 33'((~usign_rs2) + 32'b1); // extra sign bit
-    negative_sign_rs2   = 33'((~sign_rs2) + 32'b1); // extra sign bit
+    negative_usign_rs2 = 33'((~usign_rs2) + 33'b1); // extra sign bit
+    negative_sign_rs2   = 33'((~sign_rs2) + 33'b1); // extra sign bit
 
     sub_usign = 33'(usign_rs1 + negative_usign_rs2);
     sub_sign  = 33'(sign_rs1  + negative_sign_rs2);
