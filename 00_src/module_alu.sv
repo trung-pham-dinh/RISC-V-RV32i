@@ -9,15 +9,9 @@ module alu
 
 // Addition (using full-adder with overflow detection)
 function logic [32:0] instr_add(input logic [31:0] a, input logic [31:0] b, output logic overflow);
-    logic carry;
     logic [32:0] sum;
-    carry = 0;
     overflow = 0;
-    for (int i = 0; i < 32; i++) begin
-        sum[i] = a[i] ^ b[i] ^ carry;
-        carry = (a[i] & b[i]) | ((a[i] ^ b[i]) & carry);
-    end
-    sum[32] = carry;
+    sum = a + b;
     
     // Check for overflow: if both operands have the same sign, and the result has a different sign
     overflow = (a[31] == b[31]) && (sum[31] != a[31]);
