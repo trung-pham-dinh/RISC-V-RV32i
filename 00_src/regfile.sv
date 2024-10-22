@@ -21,7 +21,8 @@ module regfile
 
     assign regs[0] = '0;
     generate
-        for(genvar i=1; i<32; i++) begin: g_regfile
+		genvar i;
+        for(i=1; i<32; i++) begin: g_regfile
             always_ff @( posedge i_clk ) begin
                 if(~i_rst_n) begin
                     regs[i] <= '0; 
