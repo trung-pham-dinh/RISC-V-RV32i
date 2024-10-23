@@ -6,18 +6,11 @@ module alu
     , input  ALUSel_e     i_alu_op
     , output logic [31:0] o_alu_res
 );
+logic [32:0] add_res, sub_res; // intermediate assignment to prevent error from quartus
 
 // Addition (using a full-adder)
 function logic [32:0] instr_add(input logic [31:0] a, input logic [31:0] b);
-    logic carry;
-    logic [32:0] sum;
-    carry = 0;
-    for (int i = 0; i < 32; i++) begin
-        sum[i] = a[i] ^ b[i] ^ carry;
-        carry = (a[i] & b[i]) | ((a[i] ^ b[i]) & carry);
-    end
-    sum[32] = carry;
-    return sum;
+    return a+b;
 endfunction
 
 // Two's complement subtraction (by adding the negated operand)
@@ -98,19 +91,23 @@ function logic [31:0] instr_sltu(input logic [31:0] a, input logic [31:0] b);
     return {31'b0,sub_usign[32]};  // MSB indicates result of comparison
 endfunction
 
+
+assign add_res = instr_add(i_operand_a, i_operand_b);
+assign sub_res = instr_add(i_operand_a, i_operand_b);
+
 always_comb begin
     case (i_alu_op)
-        ALU_ADD  : o_alu_res = instr_add(i_operand_a, i_operand_b)[31:0];    // ADD
-        ALU_SUB  : o_alu_res = instr_sub(i_operand_a, i_operand_b)[31:0];    // SUB
-        ALU_XOR  : o_alu_res = i_operand_a ^ i_operand_b;                    // XOR
-        ALU_OR   : o_alu_res = i_operand_a | i_operand_b;                    // OR
-        ALU_AND  : o_alu_res = i_operand_a & i_operand_b;                    // AND
-        ALU_SLL  : o_alu_res = instr_sll(i_operand_a, i_operand_b[4:0]);     // SLL
-        ALU_SRL  : o_alu_res = instr_srl(i_operand_a, i_operand_b[4:0]);     // SRL
-        ALU_SRA  : o_alu_res = instr_sra(i_operand_a, i_operand_b[4:0]);     // SRA
-        ALU_SLT  : o_alu_res = instr_slt(i_operand_a, i_operand_b);          // SLT 
-        ALU_SLTU : o_alu_res = instr_sltu(i_operand_a, i_operand_b);         // SLTU 
-        default  : o_alu_res = 32'b0;                                        // Default case
+        ALU_ADD  : o_alu_res = add_res[31:0];                            // ADD
+        ALU_SUB  : o_alu_res = sub_res[31:0];                            // SUB
+        ALU_XOR  : o_alu_res = i_operand_a ^ i_operand_b;                // XOR
+        ALU_OR   : o_alu_res = i_operand_a | i_operand_b;                // OR
+        ALU_AND  : o_alu_res = i_operand_a & i_operand_b;                // AND
+        ALU_SLL  : o_alu_res = instr_sll(i_operand_a, i_operand_b[4:0]); // SLL
+        ALU_SRL  : o_alu_res = instr_srl(i_operand_a, i_operand_b[4:0]); // SRL
+        ALU_SRA  : o_alu_res = instr_sra(i_operand_a, i_operand_b[4:0]); // SRA
+        ALU_SLT  : o_alu_res = instr_slt(i_operand_a, i_operand_b);      // SLT 
+        ALU_SLTU : o_alu_res = instr_sltu(i_operand_a, i_operand_b);     // SLTU 
+        default  : o_alu_res = 32'b0;                                    // Default case
     endcase
 end
 
