@@ -1,7 +1,8 @@
 module singlecycle 
     import singlecycle_pkg::*;
 #(
-    parameter INST_MEM_ADDR_W = 10
+    parameter INST_MEM_ADDR_W = 10,
+    parameter DAT_MEM_ADDR_W  = 7 
 )
 (
     // Global clock, acitve on the rising edge
@@ -178,16 +179,33 @@ branch_comp branch_comp(
 //////////////////////////////////////////////////////////////////////////
 // Memory Access (MEM)
 //////////////////////////////////////////////////////////////////////////
+logic [3:0] st_strb;
+logic [31:0] ld_data_raw;
+logic [31:0] st_data;
 
-lsu lsu(
-    .i_clk    (i_clk    ),   
-    .i_rst_n  (i_rst_n  ),    
+lsu_dat_handler lsu_dat_handler(
+   .i_funct3  (inst[14:12] ), 
+   .i_lsb_addr(alu_res[1:0]),
 
-    .i_addr   (alu_res ),  
-    .i_st_data(rs2_data ), 
-    .i_st_strb('0       ),
-    .i_st_mem (st_mem   ), 
-    .o_ld_data(ld_data  ),
+   .i_st_data (rs2_data    ),  
+   .o_st_data (st_data     ),  
+   .o_st_strb (st_strb     ),  
+
+   .i_ld_data (ld_data_raw ),  
+   .o_ld_data (ld_data     )  
+);
+
+lsu #(
+    .ADDR_W   (DAT_MEM_ADDR_W)
+)lsu(
+    .i_clk    (i_clk       ),   
+    .i_rst_n  (i_rst_n     ),    
+
+    .i_addr   (alu_res[DAT_MEM_ADDR_W-1:0]),  
+    .i_st_data(st_data     ), 
+    .i_st_strb(st_strb     ),
+    .i_st_mem (st_mem      ), 
+    .o_ld_data(ld_data_raw ),
 
     .o_io_ledr(o_io_ledr),
     .o_io_ledg(o_io_ledg),

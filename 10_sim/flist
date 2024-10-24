@@ -5,6 +5,7 @@
 ./../00_src/control.sv
 ./../00_src/inst_mem.sv
 ./../00_src/lsu.sv
+./../00_src/lsu_dat_handler.sv
 ./../00_src/regfile.sv
 ./../00_src/singlecycle.sv
 
