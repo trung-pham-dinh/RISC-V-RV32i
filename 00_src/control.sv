@@ -24,7 +24,7 @@ logic is_br;
 logic is_jp;
 
 always_comb begin
-    casez({i_inst[30],i_inst[14:12],i_inst[6:2]})
+    (* parallel_case *) casez({i_inst[30],i_inst[14:12],i_inst[6:2]})
         9'b000001100: begin // add
             out_ctrl = {IMM_I   ,1'b1    ,1'b0    ,1'b0    ,1'b0    ,B_REG   ,A_REG   ,ALU_ADD ,1'b0    ,WB_ALU  };
             o_inst_vld = 1'b1;

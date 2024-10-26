@@ -23,9 +23,10 @@ module tbench;
   logic [6:0]  o_io_hex7;
   logic [31:0] o_io_lcd;
   logic [31:0] i_io_sw = 0;
-  logic [3:0]  i_io_btn = 0;
+  logic [3:0]  i_io_btn;
 
   initial tsk_clock_gen(i_clk);
+  initial tsk_button_gen(i_io_btn);
   initial tsk_reset(i_rst_n, `RESETPERIOD);
   initial tsk_timeout(`FINISH);
 
