@@ -20,7 +20,7 @@ module TOP (
         genvar k;
         for (k = 0; k<4; k++) begin
             btn_debounce #(
-                .STABLE_TIME_MS(5 ),
+                .STABLE_TIME_MS(20),
                 .CLK_PERIOD_NS (20) // clock 50MHz
             ) btn_debounce (
                 .i_clk(CLOCK_50 ), 
