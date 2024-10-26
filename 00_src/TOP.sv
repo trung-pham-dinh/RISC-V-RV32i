@@ -18,9 +18,9 @@ module TOP (
 
     generate
         genvar k;
-        for (k = 0; k<4; k++) begin
+        for (k = 0; k<4; k++) begin: g_btn_db
             btn_debounce #(
-                .STABLE_TIME_MS(20),
+                .STABLE_TIME_MS(40),
                 .CLK_PERIOD_NS (20) // clock 50MHz
             ) btn_debounce (
                 .i_clk(CLOCK_50 ), 
