@@ -8,7 +8,7 @@ module lsu (
    input  logic [3:0]  i_st_strb,  // Byte strobe (used for byte/halfword/word writes)
    input  logic        i_lsu_wren, // 1 if writing
    output logic [31:0] o_ld_data,
-   output logic        o_data_vld, // Valid data signal
+   output logic        o_data_vld,
    // Peripherals
    input  logic [31:0] i_io_sw,
    input  logic [3:0]  i_io_btn,
@@ -38,13 +38,13 @@ module lsu (
    logic [31:0] sw_reg;
    logic [31:0] btn_reg;
    logic [31:0] rd_data_mem;
-   logic is_data_addr;
-   logic is_ledr_addr;
-   logic is_ledg_addr;
-   logic is_seg7_addr;
-   logic is_lcd_addr ;
-   logic is_sw_addr  ;
-   logic is_btn_addr  ;
+   logic        is_data_addr;
+   logic        is_ledr_addr;
+   logic        is_ledg_addr;
+   logic        is_seg7_addr;
+   logic        is_lcd_addr ;
+   logic        is_sw_addr  ;
+   logic        is_btn_addr  ;
 
    // Base addresses
    localparam DATA_BASE_ADDR = 32'h0000_2000;
@@ -68,6 +68,25 @@ module lsu (
       is_sw_addr   = i_lsu_addr              == SW_BASE_ADDR;
       is_btn_addr  = i_lsu_addr              == BTN_BASE_ADDR;
    end
+
+   //---------------------------
+   // Data memory - TODO: use SDRAM later on
+   //---------------------------
+   localparam int
+		ADDR_WIDTH = DATA_LAST_ADDR-DATA_BASE_ADDR,
+		BYTE_WIDTH = 8,
+		BYTES      = 4;
+
+	logic [BYTES-1:0][BYTE_WIDTH-1:0] ram[0:ADDR_WIDTH-1];
+
+   // Write data
+	always_ff@(posedge i_clk)	begin
+		if(i_lsu_wren && is_data_addr) begin
+         for (int i = 0; i < BYTES; i++) begin
+            if(i_st_strb[i]) ram[i_lsu_addr-DATA_BASE_ADDR][i] <= i_st_data[BYTE_WIDTH*i+:BYTE_WIDTH];
+         end
+	   end
+	end
 
    //---------------------------
    //          MMIO
@@ -137,10 +156,8 @@ module lsu (
             o_data_vld <= 1'b1;
          end
          else if (!i_lsu_wren && is_data_addr) begin
-            o_ld_data <= rd_data_mem;
+            o_ld_data  <= ram[i_lsu_addr-DATA_BASE_ADDR];
             o_data_vld <= 1'b1;
-            // This delays data 1 more cycle. Temporarily waive
-            // for simulation.
          end
          else if (!i_lsu_wren && is_btn_addr) begin
             o_ld_data <= btn_reg;
@@ -152,42 +169,22 @@ module lsu (
       end
    end
 
-   //---------------------------
-   // Data memory - TODO: use SDRAM later on
-   //---------------------------
-   localparam int
-		ADDR_WIDTH = DATA_LAST_ADDR-DATA_BASE_ADDR,
-		BYTE_WIDTH = 8,
-		BYTES      = 4;
-
-	logic [BYTES-1:0][BYTE_WIDTH-1:0] ram[0:ADDR_WIDTH-1];
-
-	always_ff@(posedge i_clk)	begin
-		if(i_lsu_wren && is_data_addr) begin
-         for (int i = 0; i < BYTES; i++) begin
-            if(i_st_strb[i]) ram[i_lsu_addr-DATA_BASE_ADDR][i] <= i_st_data[BYTE_WIDTH*i+:BYTE_WIDTH];
-         end
-	   end
-      else if (!i_lsu_wren && is_data_addr) begin
-		   rd_data_mem <= ram[i_lsu_addr-DATA_BASE_ADDR];
-      end
-	end
 
    //---------------------------
    // 7-SEG display control
    //---------------------------
    function [7:0] bcd_to_7seg;
       input [3:0] bcd;
-      //when bcd = 0, seg = 7'b1000000	
-      //when bcd = 1, seg = 7'b1111001	
-      //when bcd = 2, seg = 7'b0100100	
-      //when bcd = 3, seg = 7'b0110000	
-      //when bcd = 4, seg = 7'b0011001	
-      //when bcd = 5, seg = 7'b0010010	
-      //when bcd = 6, seg = 7'b0000010	
-      //when bcd = 7, seg = 7'b1111000	
-      //when bcd = 8, seg = 7'b0000000	
-      //when bcd = 9, seg = 7'b0010000	
+      // when bcd = 0, seg = 7'b1000000	
+      // when bcd = 1, seg = 7'b1111001	
+      // when bcd = 2, seg = 7'b0100100	
+      // when bcd = 3, seg = 7'b0110000	
+      // when bcd = 4, seg = 7'b0011001	
+      // when bcd = 5, seg = 7'b0010010	
+      // when bcd = 6, seg = 7'b0000010	
+      // when bcd = 7, seg = 7'b1111000	
+      // when bcd = 8, seg = 7'b0000000	
+      // when bcd = 9, seg = 7'b0010000	
 
       bcd_to_7seg[0] = ((~bcd[3])&(~bcd[2])&(~bcd[1])&bcd[0]) | 
                        ((~bcd[3])&bcd[2]&(~bcd[1])&(~bcd[0]));
@@ -230,6 +227,6 @@ module lsu (
       o_io_hex7 = bcd_to_7seg(seg7_4to7_reg[30:24]);
 
       // LCD display
-      o_io_lcd = lcd_reg;   
+      o_io_lcd = lcd_reg;
    end
 endmodule
