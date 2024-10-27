@@ -1,7 +1,7 @@
 `include "timescale.svh"
 
 `define RESETPERIOD 55
-`define FINISH      2005
+`define FINISH      5005
 
 module tbench;
 
@@ -9,6 +9,7 @@ module tbench;
   logic i_clk;
   logic i_rst_n;
 
+/* verilator lint_off UNUSEDSIGNAL */
   logic [31:0] o_pc_debug;
   logic        o_inst_vld;
   logic [31:0] o_io_ledr;
@@ -22,11 +23,12 @@ module tbench;
   logic [6:0]  o_io_hex6;
   logic [6:0]  o_io_hex7;
   logic [31:0] o_io_lcd;
-  logic [31:0] i_io_sw = 0;
-  logic [3:0]  i_io_btn;
+  logic [31:0] i_io_sw = 32'h12345678;
+  logic [3:0]  i_io_btn= 4'b1010;
+/* verilator lint_off UNUSEDSIGNAL */
 
   initial tsk_clock_gen(i_clk);
-  initial tsk_button_gen(i_io_btn);
+  // initial tsk_button_gen(i_io_btn);
   initial tsk_reset(i_rst_n, `RESETPERIOD);
   initial tsk_timeout(`FINISH);
 

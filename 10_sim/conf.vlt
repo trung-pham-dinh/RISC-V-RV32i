@@ -1,4 +1,2 @@
 `verilator_config
 
-lint_off -rule UNUSEDPARAM // FIXME: remove after actual connection
-lint_off -rule UNUSEDSIGNAL // FIXME: remove after actual connection

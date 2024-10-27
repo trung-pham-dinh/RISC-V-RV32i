@@ -1,7 +1,9 @@
 module control 
     import singlecycle_pkg::*;
 (
+    /* verilator lint_off UNUSEDSIGNAL */
       input  logic [31:0] i_inst
+    /* verilator lint_off UNUSEDSIGNAL */
 
     , input  logic        i_br_eq        
     , input  logic        i_br_lt

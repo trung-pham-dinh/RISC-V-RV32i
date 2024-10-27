@@ -6,7 +6,9 @@ module alu
     , input  ALUSel_e     i_alu_op
     , output logic [31:0] o_alu_res
 );
+/* verilator lint_off UNUSEDSIGNAL */
 logic [32:0] add_res, sub_res; // intermediate assignment to prevent error from quartus
+/* verilator lint_off UNUSEDSIGNAL */
 
 // Addition (using a full-adder)
 function logic [32:0] instr_add(input logic [31:0] a, input logic [31:0] b);
