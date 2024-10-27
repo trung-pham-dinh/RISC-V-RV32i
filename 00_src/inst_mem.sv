@@ -13,6 +13,6 @@ module inst_mem #(
 
     // Init mem
     initial begin
-        $readmemh("./../02_test/dump/all_alu.mem", mem);
+        $readmemh("./../02_test/dump/seg7_blink.mem", mem);
     end
 endmodule
