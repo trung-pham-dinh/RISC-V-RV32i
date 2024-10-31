@@ -1,8 +1,14 @@
 .data
-    LED_ADDRESS:        .word 0x7000     # LED display address
-    BUTTON_ADDRESS:     .word 0x7016     # Button input address
-    MAX_COUNT:          .word 595999     # Maximum value (99:59.99)
-    MIN_COUNT:          .word 0          # Minimum value (00:00.00)
+    LED_ADDRESS:         .word 0x7020  # Seven-segment LEDs
+    BUTTON_ADDRESS:      .word 0x7810  # Buttons
+    SWITCH_ADDRESS:      .word 0x7800  # Switches (required)
+    LED_GREEN_ADDRESS:   .word 0x7010  # Green LEDs (required)
+    LED_RED_ADDRESS:     .word 0x7000  # Red LEDs (required)
+    LCD_ADDRESS:         .word 0x7030  # LCD Control Registers
+    MEMORY_ADDRESS:      .word 0x2000  # Data Memory (8KiB using SDRAM) (required)
+    INSTRUCTION_ADDRESS: .word 0x0000  # Instruction Memory (8KiB) (required)
+    MAX_COUNT:           .word 595999  # Maximum value (99:59.99)
+    MIN_COUNT:           .word 0       # Minimum value (00:00.00)
     
 .text
 .globl main
@@ -13,18 +19,20 @@ main:
     lw t1, MAX_COUNT   # Load maximum count value
     lw t2, MIN_COUNT   # Load minimum count value
     li s0, 0           # s0 = current state (0=IDLE, 1=COUNT_UP, 2=COUNT_DOWN, 3=STOP)
-    li s1, 0           # s1 = previous button state
+    li s1, 0xF         # s1 = previous button state (all buttons not pressed)
 
 loop:
-    # Read button states
-    lw t3, BUTTON_ADDRESS
-    andi t3, t3, 0xF   # Get states of all 4 buttons
+    # Read button states correctly
+    lw t6, BUTTON_ADDRESS  # Load the button address
+    lw t3, 0(t6)           # Dereference to get actual button states
+    
+    # Invert button states (0 = pressed, 1 = not pressed)
+    xori t3, t3, 0xF      
 
-    # Check for button presses (0 = pressed, 1 = not pressed)
-    # Only process button if it wasn't pressed in previous iteration
-    xor t4, t3, s1     # t4 = changed buttons
-    and t4, t4, s1     # t4 = newly pressed buttons
-    mv s1, t3          # Store current button state
+    # Check for button presses 
+    xor t4, t3, s1        # t4 = changed buttons
+    and t4, t4, t3        # t4 = newly pressed buttons
+    mv s1, t3             # Store current button state
 
     # Process button presses based on current state
     beqz t4, check_counting  # If no new button press, continue counting
