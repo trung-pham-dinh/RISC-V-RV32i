@@ -8,6 +8,7 @@
 ./../00_src/lsu_dat_handler.sv
 ./../00_src/regfile.sv
 ./../00_src/singlecycle.sv
+./../00_src/btn_debounce.sv
 
 ./../01_bench/tlib.svh
 ./../01_bench/tbench.sv

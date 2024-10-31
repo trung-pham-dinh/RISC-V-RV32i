@@ -1,7 +1,9 @@
 module inst_mem #(
     parameter ADDR_W = 32
 )(
+    /* verilator lint_off UNUSEDSIGNAL */
       input  logic [ADDR_W-1:0] i_addr
+    /* verilator lint_off UNUSEDSIGNAL */
     , output logic [31:0]       o_inst
 );
     localparam N_WORDS = (2**ADDR_W) / 4;
@@ -13,6 +15,6 @@ module inst_mem #(
 
     // Init mem
     initial begin
-        $readmemh("./../02_test/dump/all_alu.mem", mem);
+        $readmemh("./../02_test/dump/lsu_test.mem", mem);
     end
 endmodule

@@ -4,6 +4,7 @@
 
 package singlecycle_pkg;
 
+    /* verilator lint_off UNUSEDPARAM */
     localparam FUNCT3_WIDTH = 3;
     localparam FUNCT7_WIDTH = 7;
     localparam OPCODE_WIDTH = 7;
@@ -58,6 +59,7 @@ package singlecycle_pkg;
         PC_ALU = 1'd1
     } PCSel_e;
     localparam PCSEL_W = $bits(PCSel_e);
+    /* verilator lint_off UNUSEDPARAM */
 endpackage
 
 `endif 

@@ -13,8 +13,10 @@ logic [32:0] usign_rs1; // extra sign bit
 logic [32:0] usign_rs2; // extra sign bit
 logic [32:0] negative_usign_rs2; // extra sign bit
 logic [32:0] negative_sign_rs2; // extra sign bit
+/* verilator lint_off UNUSEDSIGNAL */
 logic [32:0] sub_usign; // extra sign bit
 logic [32:0] sub_sign; // extra sign bit
+/* verilator lint_off UNUSEDSIGNAL */
 
 always_comb begin
     usign_rs1    = {1'b0, i_rs1_data};
