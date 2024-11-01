@@ -31,6 +31,9 @@ module singlecycle
     , input  logic [31:0] i_io_sw
     // Input for buttons
     , input  logic [3:0]  i_io_btn
+
+    // FOR RUNNING ON FPGA
+    , output logic        o_lcd_vld
 );
 //////////////////////////////////////////////////////////////////////////
 // Declaration
@@ -194,9 +197,7 @@ lsu_dat_handler lsu_dat_handler(
    .o_ld_data (ld_data     )  
 );
 
-lsu #(
-    .IS_BCD(0)
-)lsu(
+lsu lsu(
     .i_clk     (i_clk       ),   
     .i_rst_n   (i_rst_n     ),    
 
@@ -205,23 +206,24 @@ lsu #(
     .i_st_strb (st_strb     ),
     .i_lsu_wren(st_mem      ), 
     .o_ld_data (ld_data_raw ),
+    .o_lcd_vld (o_lcd_vld   ),
     /* verilator lint_off PINCONNECTEMPTY */
-    .o_data_vld(),
+    .o_data_vld(            ),
     /* verilator lint_off PINCONNECTEMPTY */
 
-    .o_io_ledr(o_io_ledr),
-    .o_io_ledg(o_io_ledg),
-    .o_io_hex0(o_io_hex0),
-    .o_io_hex1(o_io_hex1),
-    .o_io_hex2(o_io_hex2),
-    .o_io_hex3(o_io_hex3),
-    .o_io_hex4(o_io_hex4),
-    .o_io_hex5(o_io_hex5),
-    .o_io_hex6(o_io_hex6),
-    .o_io_hex7(o_io_hex7),
-    .o_io_lcd (o_io_lcd ),  
-    .i_io_sw  (i_io_sw  ),  
-    .i_io_btn (i_io_btn )   
+    .o_io_ledr (o_io_ledr   ),
+    .o_io_ledg (o_io_ledg   ),
+    .o_io_hex0 (o_io_hex0   ),
+    .o_io_hex1 (o_io_hex1   ),
+    .o_io_hex2 (o_io_hex2   ),
+    .o_io_hex3 (o_io_hex3   ),
+    .o_io_hex4 (o_io_hex4   ),
+    .o_io_hex5 (o_io_hex5   ),
+    .o_io_hex6 (o_io_hex6   ),
+    .o_io_hex7 (o_io_hex7   ),
+    .o_io_lcd  (o_io_lcd    ),  
+    .i_io_sw   (i_io_sw     ),  
+    .i_io_btn  (i_io_btn    )   
 );
 
 //////////////////////////////////////////////////////////////////////////

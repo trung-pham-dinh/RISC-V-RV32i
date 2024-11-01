@@ -15,6 +15,6 @@ module inst_mem #(
 
     // Init mem
     initial begin
-        $readmemh("./../02_test/dump/lsu_test.mem", mem);
+        $readmemh("./../02_test/dump/test_lcd.mem", mem);
     end
 endmodule

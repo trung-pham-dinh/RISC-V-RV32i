@@ -1,7 +1,5 @@
 module lsu 
-#(
-   parameter IS_BCD = 1 // if 1, we use HEX converter
-)(
+(
    // System
    input  logic        i_clk,
    input  logic        i_rst_n,
@@ -14,6 +12,7 @@ module lsu
    input  logic        i_lsu_wren, // 1 if writing
    output logic [31:0] o_ld_data,
    output logic        o_data_vld,
+   output logic        o_lcd_vld,
    // Peripherals
    input  logic [31:0] i_io_sw,
    input  logic [3:0]  i_io_btn,
@@ -48,7 +47,8 @@ module lsu
 
    // Base addresses
    localparam DATA_BASE_ADDR = 32'h0000_2000;
-   localparam DATA_LAST_ADDR = 32'h0000_3FFF;
+   // localparam DATA_LAST_ADDR = 32'h0000_3FFF;
+   localparam DATA_LAST_ADDR = 32'h0000_20FF; // FIXME: for synthesis with block RAM
    localparam LEDR_BASE_ADDR = 32'h0000_7000;
    localparam LEDG_BASE_ADDR = 32'h0000_7010;
    localparam SEG7_BASE_ADDR = 32'h0000_7020;
@@ -172,32 +172,7 @@ module lsu
       end
    end
 
-
-   //---------------------------
-   // 7-SEG display control
-   //---------------------------
-   function [6:0] bcd_to_7seg;
-      input [3:0] bcd;
-
-      case(bcd)
-         4'h0: bcd_to_7seg = 7'b1000000;
-         4'h1: bcd_to_7seg = 7'b1111001;	
-         4'h2: bcd_to_7seg = 7'b0100100; 	
-         4'h3: bcd_to_7seg = 7'b0110000; 	
-         4'h4: bcd_to_7seg = 7'b0011001; 	
-         4'h5: bcd_to_7seg = 7'b0010010; 	
-         4'h6: bcd_to_7seg = 7'b0000010; 	
-         4'h7: bcd_to_7seg = 7'b1111000; 	
-         4'h8: bcd_to_7seg = 7'b0000000; 	
-         4'h9: bcd_to_7seg = 7'b0011000; 	
-         4'ha: bcd_to_7seg = 7'b0001000;
-         4'hb: bcd_to_7seg = 7'b0000011;
-         4'hc: bcd_to_7seg = 7'b1000110;
-         4'hd: bcd_to_7seg = 7'b0100001;
-         4'he: bcd_to_7seg = 7'b0000110;
-         4'hf: bcd_to_7seg = 7'b0001110;
-      endcase      
-   endfunction // End 7-SEG display control
+   assign o_lcd_vld = i_lsu_wren & is_lcd_addr;
 
 
    always_comb begin : peripherals_output
@@ -206,26 +181,14 @@ module lsu
       o_io_ledr = ledr_reg;
 
       // 7-segment display
-      if(IS_BCD) begin
-         o_io_hex0 = bcd_to_7seg(seg7_0to3_reg[8*0 +: 4]);
-         o_io_hex1 = bcd_to_7seg(seg7_0to3_reg[8*1 +: 4]);
-         o_io_hex2 = bcd_to_7seg(seg7_0to3_reg[8*2 +: 4]);
-         o_io_hex3 = bcd_to_7seg(seg7_0to3_reg[8*3 +: 4]);
-         o_io_hex4 = bcd_to_7seg(seg7_4to7_reg[8*0 +: 4]);
-         o_io_hex5 = bcd_to_7seg(seg7_4to7_reg[8*1 +: 4]);
-         o_io_hex6 = bcd_to_7seg(seg7_4to7_reg[8*2 +: 4]);
-         o_io_hex7 = bcd_to_7seg(seg7_4to7_reg[8*3 +: 4]);
-      end
-      else begin 
-         o_io_hex0 = seg7_0to3_reg[8*0 +: 7];
-         o_io_hex1 = seg7_0to3_reg[8*1 +: 7];
-         o_io_hex2 = seg7_0to3_reg[8*2 +: 7];
-         o_io_hex3 = seg7_0to3_reg[8*3 +: 7];
-         o_io_hex4 = seg7_4to7_reg[8*0 +: 7];
-         o_io_hex5 = seg7_4to7_reg[8*1 +: 7];
-         o_io_hex6 = seg7_4to7_reg[8*2 +: 7];
-         o_io_hex7 = seg7_4to7_reg[8*3 +: 7];
-      end
+      o_io_hex0 = seg7_0to3_reg[8*0 +: 7];
+      o_io_hex1 = seg7_0to3_reg[8*1 +: 7];
+      o_io_hex2 = seg7_0to3_reg[8*2 +: 7];
+      o_io_hex3 = seg7_0to3_reg[8*3 +: 7];
+      o_io_hex4 = seg7_4to7_reg[8*0 +: 7];
+      o_io_hex5 = seg7_4to7_reg[8*1 +: 7];
+      o_io_hex6 = seg7_4to7_reg[8*2 +: 7];
+      o_io_hex7 = seg7_4to7_reg[8*3 +: 7];
 
       // LCD display
       o_io_lcd = lcd_reg;

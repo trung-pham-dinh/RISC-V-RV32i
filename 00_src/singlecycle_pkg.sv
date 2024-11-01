@@ -59,6 +59,34 @@ package singlecycle_pkg;
         PC_ALU = 1'd1
     } PCSel_e;
     localparam PCSEL_W = $bits(PCSel_e);
+
+   //---------------------------
+   // 7-SEG display control
+   //---------------------------
+   function [6:0] bcd_to_7seg;
+      input [3:0] bcd;
+
+      case(bcd)
+         4'h0: bcd_to_7seg = 7'b1000000;
+         4'h1: bcd_to_7seg = 7'b1111001;	
+         4'h2: bcd_to_7seg = 7'b0100100; 	
+         4'h3: bcd_to_7seg = 7'b0110000; 	
+         4'h4: bcd_to_7seg = 7'b0011001; 	
+         4'h5: bcd_to_7seg = 7'b0010010; 	
+         4'h6: bcd_to_7seg = 7'b0000010; 	
+         4'h7: bcd_to_7seg = 7'b1111000; 	
+         4'h8: bcd_to_7seg = 7'b0000000; 	
+         4'h9: bcd_to_7seg = 7'b0011000; 	
+         4'ha: bcd_to_7seg = 7'b0001000;
+         4'hb: bcd_to_7seg = 7'b0000011;
+         4'hc: bcd_to_7seg = 7'b1000110;
+         4'hd: bcd_to_7seg = 7'b0100001;
+         4'he: bcd_to_7seg = 7'b0000110;
+         4'hf: bcd_to_7seg = 7'b0001110;
+         default: bcd_to_7seg = '0; // No benefit if adding this line, just to make sure it will not generate latch if not enough cases. Safety first :)
+      endcase      
+   endfunction // End 7-SEG display control
+
     /* verilator lint_off UNUSEDPARAM */
 endpackage
 
