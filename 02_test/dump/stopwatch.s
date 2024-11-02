@@ -16,18 +16,18 @@
 main:
     # Initialize registers for IDLE state
     li t0, 0           # t0 = counter (centiseconds), start at 00:00.00
-    lw t1, MAX_COUNT   # Load maximum count value
-    lw t2, MIN_COUNT   # Load minimum count value
-    li s0, 0           # s0 = current state (0=IDLE, 1=COUNT_UP, 2=COUNT_DOWN, 3=STOP)
+    li t1, 595999 #  MAX_COUNT  # Load maximum count value
+    li t2, 0 # MIN_COUNT   # Load minimum count value
+    li s0, 1           # s0 = current state (0=IDLE, 1=COUNT_UP, 2=COUNT_DOWN, 3=STOP)
     li s1, 0xF         # s1 = previous button state (all buttons not pressed)
 
 loop:
     # Read button states correctly
-    lw t6, BUTTON_ADDRESS  # Load the button address
+    li t6, 0x7810 # BUTTON_ADDRESS  # Load the button address
     lw t3, 0(t6)           # Dereference to get actual button states
     
     # Invert button states (0 = pressed, 1 = not pressed)
-    xori t3, t3, 0xF      
+    # xori t3, t3, 0xF      
 
     # Check for button presses 
     xor t4, t3, s1        # t4 = changed buttons
@@ -76,7 +76,8 @@ check_reset:
 
 check_counting:
     # Delay for 1/100th of a second (500,000 cycles at 50MHz)
-    li t4, 500000
+    li t4, 250000 # only need half of needed cycles, because we loop two instructions
+    # li t4, 3 # delay for simulation
 delay_loop:
     addi t4, t4, -1
     bnez t4, delay_loop
@@ -120,7 +121,7 @@ min_bcd:
     addi t4, t4, 1
     j min_bcd
 min_bcd_done:
-    slli t4, t4, 4        # Shift tens digit
+    slli t4, t4, 8        # Shift tens digit
     or t4, t4, t3         # Combine digits
     mv t2, t4             # Store minutes BCD in t2
 
@@ -143,7 +144,7 @@ sec_bcd:
     addi t4, t4, 1
     j sec_bcd
 sec_bcd_done:
-    slli t4, t4, 4        # Shift tens digit
+    slli t4, t4, 8        # Shift tens digit
     or t4, t4, t3         # Combine digits
     mv t3, t4             # Store seconds BCD in t3
 
@@ -156,17 +157,19 @@ csec_bcd:
     addi a0, a0, 1
     j csec_bcd
 csec_bcd_done:
-    slli a0, a0, 4        # Shift tens digit
+    slli a0, a0, 8        # Shift tens digit
     or t4, a0, t4         # Combine digits
 
     # Combine all digits for display
-    slli t2, t2, 16       # Minutes
-    slli t3, t3, 8        # Seconds
-    or t5, t2, t3         # Combine minutes and seconds
-    or t5, t5, t4         # Add centiseconds
+    addi t2, t2, 0      # Minutes
+    slli t3, t3, 16     # Seconds
+    or t5, t3, t4       # Add centiseconds
+    
 
     # Output to LEDs
-    lw t6, LED_ADDRESS
+    li t6, 0x7024 # LED_ADDRESS
+    sw t2, 0(t6)
+    li t6, 0x7020 # LED_ADDRESS
     sw t5, 0(t6)
 
     j loop

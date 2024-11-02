@@ -15,6 +15,6 @@ module inst_mem #(
 
     // Init mem
     initial begin
-        $readmemh("./../02_test/dump/test_lcd.mem", mem);
+        $readmemh("./../02_test/dump/stopwatch.mem", mem);
     end
 endmodule

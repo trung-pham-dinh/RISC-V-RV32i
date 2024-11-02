@@ -1,7 +1,7 @@
 `include "timescale.svh"
 
 `define RESETPERIOD 55
-`define FINISH      115005
+`define FINISH      11500500
 
 module tbench;
 
@@ -51,7 +51,7 @@ singlecycle #(
 
   logic        CLOCK_50;
   logic [17:0] SW = 18'h1234;
-  logic [3:0]  KEY;
+  logic [3:0]  KEY = 4'b1111;
 
 /* verilator lint_off UNUSEDSIGNAL */
   logic [8:0]  LEDG;
@@ -75,7 +75,7 @@ singlecycle #(
   logic        i_rst_n;
 
   initial tsk_clock_gen(CLOCK_50);
-  initial tsk_button_gen(KEY);
+  // initial tsk_button_gen(KEY);
   initial tsk_reset(i_rst_n, `RESETPERIOD);
   initial tsk_timeout(`FINISH);
 
