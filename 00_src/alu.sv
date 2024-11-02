@@ -95,7 +95,7 @@ endfunction
 
 
 assign add_res = instr_add(i_operand_a, i_operand_b);
-assign sub_res = instr_add(i_operand_a, i_operand_b);
+assign sub_res = instr_sub(i_operand_a, i_operand_b);
 
 always_comb begin
     case (i_alu_op)

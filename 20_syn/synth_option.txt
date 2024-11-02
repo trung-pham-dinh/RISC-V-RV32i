@@ -10,4 +10,4 @@ Analysis & Synthesis Settings:
 	PowerPlay power optimization: Normal =
 Filter Settings:
 	Fitter effort: Auto ***
-	Router timing optimization level: Maximum (little worse than Normal)
+	Router timing optimization level: Maximum (little worse than Normal if met timing. If not met timing, **)
