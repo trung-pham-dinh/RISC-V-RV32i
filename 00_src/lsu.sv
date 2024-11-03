@@ -44,29 +44,32 @@ module lsu
    logic        is_lcd_addr ;
    logic        is_sw_addr  ;
    logic        is_btn_addr ;
+   logic        is_timer_addr;
 
    // Base addresses
-   localparam DATA_BASE_ADDR = 32'h0000_2000;
+   localparam DATA_BASE_ADDR  = 32'h0000_2000;
    // localparam DATA_LAST_ADDR = 32'h0000_3FFF;
-   localparam DATA_LAST_ADDR = 32'h0000_20FF; // FIXME: for synthesis with block RAM
-   localparam LEDR_BASE_ADDR = 32'h0000_7000;
-   localparam LEDG_BASE_ADDR = 32'h0000_7010;
-   localparam SEG7_BASE_ADDR = 32'h0000_7020;
-   localparam LCD_BASE_ADDR  = 32'h0000_7030;
-   localparam SW_BASE_ADDR   = 32'h0000_7800;
-   localparam BTN_BASE_ADDR  = 32'h0000_7810;
+   localparam DATA_LAST_ADDR  = 32'h0000_20FF; // FIXME: for synthesis with block RAM
+   localparam TIMER_BASE_ADDR = 32'h0000_4000; // 4 timers
+   localparam LEDR_BASE_ADDR  = 32'h0000_7000;
+   localparam LEDG_BASE_ADDR  = 32'h0000_7010;
+   localparam SEG7_BASE_ADDR  = 32'h0000_7020;
+   localparam LCD_BASE_ADDR   = 32'h0000_7030;
+   localparam SW_BASE_ADDR    = 32'h0000_7800;
+   localparam BTN_BASE_ADDR   = 32'h0000_7810;
 
    always_comb begin
       // Generate a byte-wise mask for 32-bit data 
       byte_mask = {{8{i_st_strb[3]}}, {8{i_st_strb[2]}}, {8{i_st_strb[1]}}, {8{i_st_strb[0]}}};
 
-      is_data_addr = (i_lsu_addr[15:13] == DATA_BASE_ADDR[15:13]) && (~|i_lsu_addr[31:16]);
-      is_ledr_addr = (i_lsu_addr[15:2]  == LEDR_BASE_ADDR[15:2] ) && (~|i_lsu_addr[31:16]);
-      is_ledg_addr = (i_lsu_addr[15:2]  == LEDG_BASE_ADDR[15:2] ) && (~|i_lsu_addr[31:16]);
-      is_seg7_addr = (i_lsu_addr[15:3]  == SEG7_BASE_ADDR[15:3] ) && (~|i_lsu_addr[31:16]);
-      is_lcd_addr  = (i_lsu_addr[15:2]  == LCD_BASE_ADDR [15:2] ) && (~|i_lsu_addr[31:16]);
-      is_sw_addr   = (i_lsu_addr[15:2]  == SW_BASE_ADDR  [15:2] ) && (~|i_lsu_addr[31:16]);
-      is_btn_addr  = (i_lsu_addr[15:2]  == BTN_BASE_ADDR [15:2] ) && (~|i_lsu_addr[31:16]);
+      is_data_addr  = (i_lsu_addr[15:13] == DATA_BASE_ADDR [15:13]) && (~|i_lsu_addr[31:16]);
+      is_ledr_addr  = (i_lsu_addr[15:2]  == LEDR_BASE_ADDR [15:2] ) && (~|i_lsu_addr[31:16]);
+      is_ledg_addr  = (i_lsu_addr[15:2]  == LEDG_BASE_ADDR [15:2] ) && (~|i_lsu_addr[31:16]);
+      is_seg7_addr  = (i_lsu_addr[15:3]  == SEG7_BASE_ADDR [15:3] ) && (~|i_lsu_addr[31:16]);
+      is_lcd_addr   = (i_lsu_addr[15:2]  == LCD_BASE_ADDR  [15:2] ) && (~|i_lsu_addr[31:16]);
+      is_sw_addr    = (i_lsu_addr[15:2]  == SW_BASE_ADDR   [15:2] ) && (~|i_lsu_addr[31:16]);
+      is_btn_addr   = (i_lsu_addr[15:2]  == BTN_BASE_ADDR  [15:2] ) && (~|i_lsu_addr[31:16]);
+      is_timer_addr = (i_lsu_addr[15:4]  == TIMER_BASE_ADDR[15:4] ) && (~|i_lsu_addr[31:16]);
    end
 
    //---------------------------
@@ -89,6 +92,29 @@ module lsu
          end
 	   end
 	end
+
+   //---------------------------
+   // Timers
+   //---------------------------
+   logic [31:0] timer [0:3];
+   generate
+      genvar i;
+      for (i = 0; i < 4; i++) begin: g_timer
+         always_ff @( posedge i_clk ) begin
+            if(~i_rst_n) begin
+               timer[i] <= '0;
+            end
+            else begin 
+               if (i_lsu_wren && is_timer_addr && (i_lsu_addr[3:2]==i)) begin
+                  timer[i] <= (timer[i] & ~byte_mask) | (i_st_data & byte_mask);
+               end
+               else begin
+                  timer[i] <= timer[i] + 1;
+               end
+            end
+         end 
+      end
+   endgenerate
 
    //---------------------------
    //          MMIO
@@ -127,48 +153,47 @@ module lsu
    end
 
    // Read logic
-   always_ff @( posedge i_clk ) begin : MMIO_rd
-      if (!i_rst_n) begin
-         o_ld_data  <= 0;
-         o_data_vld <= 0;
+   always_comb begin: MMIO_rd
+      if (is_ledr_addr) begin
+         o_ld_data  = ledr_reg;
+         o_data_vld = 1'b1;
       end
-      else begin
-         if (!i_lsu_wren && is_ledr_addr) begin
-            o_ld_data  <= ledr_reg;
-            o_data_vld <= 1'b1;
-         end
-         else if (!i_lsu_wren && is_ledg_addr) begin
-            o_ld_data  <= ledg_reg;
-            o_data_vld <= 1'b1;
-         end
-         else if (!i_lsu_wren && is_seg7_addr) begin
-            if (i_lsu_addr[2]) begin
-               o_ld_data <= seg7_4to7_reg;
-            end
-            else begin
-               o_ld_data <= seg7_0to3_reg;
-            end
-            o_data_vld <= 1'b1;
-         end
-         else if (!i_lsu_wren && is_lcd_addr) begin
-            o_ld_data <= lcd_reg;
-            o_data_vld <= 1'b1;
-         end
-         else if (!i_lsu_wren && is_sw_addr) begin
-            o_ld_data <= i_io_sw;
-            o_data_vld <= 1'b1;
-         end
-         else if (!i_lsu_wren && is_data_addr) begin
-            o_ld_data  <= ram[i_lsu_addr[ADDR_WIDTH-1:2]];
-            o_data_vld <= 1'b1;
-         end
-         else if (!i_lsu_wren && is_btn_addr) begin
-            o_ld_data <= {28'd0, i_io_btn};
-            o_data_vld <= 1'b1;
+      else if (is_ledg_addr) begin
+         o_ld_data  = ledg_reg;
+         o_data_vld = 1'b1;
+      end
+      else if (is_seg7_addr) begin
+         if (i_lsu_addr[2]) begin
+            o_ld_data = seg7_4to7_reg;
          end
          else begin
-            o_data_vld <= 0;
+            o_ld_data = seg7_0to3_reg;
          end
+         o_data_vld = 1'b1;
+      end
+      else if (is_lcd_addr) begin
+         o_ld_data  = lcd_reg;
+         o_data_vld = 1'b1;
+      end
+      else if (is_sw_addr) begin
+         o_ld_data  = i_io_sw;
+         o_data_vld = 1'b1;
+      end
+      else if (is_data_addr) begin
+         o_ld_data  = ram[i_lsu_addr[ADDR_WIDTH-1:2]];
+         o_data_vld = 1'b1;
+      end
+      else if (is_btn_addr) begin
+         o_ld_data  = {28'd0, i_io_btn};
+         o_data_vld = 1'b1;
+      end
+      else if (is_timer_addr) begin
+         o_ld_data  = timer[i_lsu_addr[3:2]];
+         o_data_vld = 1'b1;
+      end
+      else begin
+         o_ld_data  = '0;
+         o_data_vld = 0;
       end
    end
 
