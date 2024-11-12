@@ -18,6 +18,10 @@ module control
     , output WBSel_e      o_wb_sel
     , output PCSel_e      o_pc_sel
     , output logic        o_inst_vld
+    , output logic        o_pc_en
+
+    , output logic        lsu_VALID
+    , input  logic        lsu_READY
 );
 localparam OUT_W =  {IMMSEL_W+1+1+1+1+BSEL_W+ASEL_W+ALUSEL_W+1+WBSEL_W};
 logic [OUT_W-1:0] out_ctrl;
@@ -202,6 +206,14 @@ always_comb begin
         o_pc_sel = PC_4;
     end
     o_pc_sel = (o_inst_vld)? o_pc_sel : PC_4;
+end
+
+always_comb begin
+    lsu_VALID = o_st_mem || (o_wb_sel == WB_MEM); // LSU request
+end
+
+always_comb begin
+    o_pc_en = ~(lsu_VALID & ~lsu_READY); // TODO: if need to request other peripherals need latency, edit here
 end
 
 endmodule

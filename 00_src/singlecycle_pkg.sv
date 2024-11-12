@@ -11,6 +11,21 @@ package singlecycle_pkg;
     localparam REGIDX_WIDTH = 5;
     localparam IMM_WIDTH    = 5;
 
+    // Base addresses
+    localparam DATA_BASE_ADDR = 32'h0000_2000;
+    localparam DATA_LAST_ADDR = 32'h0000_4000;
+    // localparam DATA_LAST_ADDR  = 32'h0000_2100; // FIXME: for synthesis with block RAM
+    localparam TIMER_BASE_ADDR = 32'h0000_4000; // 4 timers
+    localparam LEDR_BASE_ADDR  = 32'h0000_7000;
+    localparam LEDG_BASE_ADDR  = 32'h0000_7010;
+    localparam SEG7_BASE_ADDR  = 32'h0000_7020;
+    localparam LCD_BASE_ADDR   = 32'h0000_7030;
+    localparam SW_BASE_ADDR    = 32'h0000_7800;
+    localparam BTN_BASE_ADDR   = 32'h0000_7810;
+
+    localparam MEM_FLOP = 0;
+    localparam MEM_SRAM = 1;
+
     typedef enum logic[1:0] { 
         A_REG  = 2'd0,
         A_PC   = 2'd1,

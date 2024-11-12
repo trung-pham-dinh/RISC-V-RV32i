@@ -1,6 +1,8 @@
 # +define+AHAI
 -I./../00_src/
 ./../00_src/singlecycle_pkg.sv
+./../00_src/sram_ctrl.sv
+./../00_src/data_mem.sv
 ./../00_src/alu.sv
 ./../00_src/branch_comp.sv
 ./../00_src/control.sv
@@ -14,6 +16,20 @@
 ./../00_src/TOP_SYNTH.sv
 
 ./../01_bench/tlib.svh
-./../01_bench/tbench.sv
+
+# scoreboard
+./../01_bench/scoreboard/scoreboard_alu.sv
+./../01_bench/scoreboard/scoreboard_pc.sv
+./../01_bench/scoreboard/scoreboard_branch_comp.sv
+./../01_bench/scoreboard/scoreboard_lsu_dat_handler.sv
+./../01_bench/scoreboard/scoreboard_regfile.sv
+./../01_bench/scoreboard/scoreboard_lsu.sv
+# driver
+./../01_bench/driver/driver_alu.sv
+
+# top testbench
+# ./../01_bench/alu/tbench.sv
+./../01_bench/singlecycle/tbench.sv
+
 ./conf.vlt
 -top tbench

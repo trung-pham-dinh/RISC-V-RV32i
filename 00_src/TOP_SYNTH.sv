@@ -23,6 +23,14 @@ module TOP_SYNTH
     , output logic        LCD_RS
     , output logic        LCD_ON
     // , output logic        LCD_BLON // DE2 has no backlight
+
+    , output logic [17:0] SRAM_ADDR
+    , inout  wire  [15:0] SRAM_DQ  
+    , output logic        SRAM_CE_N
+    , output logic        SRAM_WE_N
+    , output logic        SRAM_LB_N
+    , output logic        SRAM_UB_N
+    , input  logic        SRAM_OE_N
 );
 
     logic [3:0] KEY_db;
@@ -116,7 +124,10 @@ lcd_ctrl #(
         HEX7 = bcd_to_7seg(io_hex7[3:0]);
     end
 
-    singlecycle singlecycle(
+    singlecycle #(
+        .INST_MEM_ADDR_W(10),
+        .MEM_TYPE(MEM_SRAM) // 1: sram-based
+    ) singlecycle(
     .i_clk     (CLOCK_50  ), 
     .i_rst_n   (SW[0]     ),   
     .o_io_ledg (io_ledg   ),
@@ -133,6 +144,13 @@ lcd_ctrl #(
     .i_io_sw   (io_sw     ),   
     .i_io_btn  (KEY_db    ),    
     .o_lcd_vld (lcd_vld   ),
+    .SRAM_ADDR (SRAM_ADDR ),      
+    .SRAM_DQ   (SRAM_DQ   ),      
+    .SRAM_CE_N (SRAM_CE_N ),      
+    .SRAM_WE_N (SRAM_WE_N ),      
+    .SRAM_LB_N (SRAM_LB_N ),      
+    .SRAM_UB_N (SRAM_UB_N ),      
+    .SRAM_OE_N (SRAM_OE_N ),
     /* verilator lint_off PINCONNECTEMPTY */
     .o_pc_debug(),
     .o_inst_vld()

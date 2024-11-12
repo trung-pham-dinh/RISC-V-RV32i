@@ -1,3 +1,5 @@
+`include "singlecycle.svh"
+
 module inst_mem #(
     parameter ADDR_W = 32
 )(
@@ -15,6 +17,6 @@ module inst_mem #(
 
     // Init mem
     initial begin
-        $readmemh("./../02_test/dump/stopwatch.mem", mem);
+        $readmemh(`INST_MEM_PATH, mem);
     end
 endmodule

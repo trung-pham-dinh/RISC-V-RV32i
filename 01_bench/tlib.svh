@@ -11,12 +11,19 @@ task tsk_button_gen(ref logic[3:0] i_io_btn);
     #1; // add this FUCKING delay to avoid race condition while simulation !!!!!!!!!!!!!!!!!!!!!
     i_io_btn = '0;
     forever begin
-      i_io_btn[0] = 1'($urandom%2);
-      i_io_btn[1] = 1'($urandom%2);
-      i_io_btn[2] = 1'($urandom%2);
-      i_io_btn[3] = 1'($urandom%2);
-      #10;
-      #(($urandom%15) * 10); 
+      i_io_btn = {4{1'($urandom%2)}};
+      #(100); 
+    end
+  end
+endtask
+
+task tsk_switch_gen(ref logic[31:0] i_io_sw);
+  begin
+    #1; // add this FUCKING delay to avoid race condition while simulation !!!!!!!!!!!!!!!!!!!!!
+    i_io_sw = '0;
+    forever begin
+      i_io_sw = $urandom%20; 
+      #(100); 
     end
   end
 endtask

@@ -1,4 +1,5 @@
 # Memory-mapped I/O addresses for DE2-70
+# FIXME: COMPILER DOEST UNDERSTAND
 .eqv SW_ADDR         0x7800  # Base address for switches
 .eqv BTN_ADDR        0x7810  # Base address for buttons
 .eqv LCD_ADDR        0x7030  # Base address for LCD control registers
@@ -10,6 +11,7 @@
 .eqv DISPLAY_BTN     0x02    # Button 1 for displaying result
 .eqv RESET_BTN       0x04    # Button 2 for system reset
 
+# FIXME: IS THERE ANY OTHER WAY TO SPECIFY THESE ?
 .data
     menu_header:    .string "2D Distance Calc"
     point_a_msg:    .string "Point A:"
@@ -35,6 +37,9 @@ lcd_init:
     addi sp, sp, -4
     sw ra, 0(sp)
     
+    # FIXME: TURN ON POWER FOR LCD
+    # FIXME: MAYBE NOT ENOUGH FOR INIT
+
     # Function set (8-bit mode, 2 lines)
     li a0, 0x38
     call lcd_command

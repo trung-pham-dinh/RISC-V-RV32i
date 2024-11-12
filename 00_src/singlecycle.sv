@@ -1,7 +1,8 @@
 module singlecycle 
     import singlecycle_pkg::*;
 #(
-    parameter INST_MEM_ADDR_W = 10 // FIXME: increase memsize 
+    parameter INST_MEM_ADDR_W = 10, // FIXME: increase memsize 
+    parameter MEM_TYPE = MEM_FLOP // 0: flop-based, 1: sram-based
 )
 (
     // Global clock, acitve on the rising edge
@@ -32,24 +33,34 @@ module singlecycle
     // Input for buttons
     , input  logic [3:0]  i_io_btn
 
-    // FOR RUNNING ON FPGA
+    // Write request to LCD: only for FPGA
     , output logic        o_lcd_vld
+    // SRAM interface
+    , output logic [17:0] SRAM_ADDR
+    , inout  wire  [15:0] SRAM_DQ  
+    , output logic        SRAM_CE_N
+    , output logic        SRAM_WE_N
+    , output logic        SRAM_LB_N
+    , output logic        SRAM_UB_N
+    , input  logic        SRAM_OE_N
 );
 //////////////////////////////////////////////////////////////////////////
 // Declaration
 //////////////////////////////////////////////////////////////////////////
 
     // control unit
-    ImmSel_e     imm_sel;  
-    logic        reg_wen;   
-    logic        br_un  ; 
-    BSel_e       b_sel  ; 
-    ASel_e       a_sel  ; 
-    ALUSel_e     alu_sel;  
-    logic        st_mem ;  
-    WBSel_e      wb_sel ;  
-    PCSel_e      pc_sel ;  
-    logic        pc_en=1;
+    ImmSel_e     imm_sel  ;  
+    logic        reg_wen  ;   
+    logic        br_un    ; 
+    BSel_e       b_sel    ; 
+    ASel_e       a_sel    ; 
+    ALUSel_e     alu_sel  ;  
+    logic        st_mem   ;  
+    WBSel_e      wb_sel   ;  
+    PCSel_e      pc_sel   ;  
+    logic        pc_en    ;
+    logic        lsu_VALID;
+    logic        lsu_READY;
 
     // Instruction Fetch
     logic [31:0] pc;
@@ -77,8 +88,8 @@ module singlecycle
     // Write Back
     logic [31:0] wb_res;
 
-    assign o_pc_debug = '0; // temporarily assigned
-///////////////////////t///////////////////////////////////////////////////
+    assign o_pc_debug = pc;
+//////////////////////////////////////////////////////////////////////////
 // Control Unit
 //////////////////////////////////////////////////////////////////////////
 
@@ -95,7 +106,10 @@ control control(
     .o_st_mem  (st_mem    ),  
     .o_wb_sel  (wb_sel    ),  
     .o_pc_sel  (pc_sel    ),
-    .o_inst_vld(o_inst_vld)
+    .o_inst_vld(o_inst_vld),
+    .o_pc_en   (pc_en     ),
+    .lsu_VALID (lsu_VALID ),
+    .lsu_READY (lsu_READY )
 );
 
 //////////////////////////////////////////////////////////////////////////
@@ -166,7 +180,7 @@ alu alu(
     .i_operand_a(a_operand),   
     .i_operand_b(b_operand),   
     .i_alu_op   (alu_sel  ),
-    .o_alu_res (alu_res )  
+    .o_alu_res  (alu_res  )  
 );
 
 
@@ -197,7 +211,9 @@ lsu_dat_handler lsu_dat_handler(
    .o_ld_data (ld_data     )  
 );
 
-lsu lsu(
+lsu #(
+    .MEM_TYPE(MEM_TYPE)
+) lsu (
     .i_clk     (i_clk       ),   
     .i_rst_n   (i_rst_n     ),    
 
@@ -207,9 +223,9 @@ lsu lsu(
     .i_lsu_wren(st_mem      ), 
     .o_ld_data (ld_data_raw ),
     .o_lcd_vld (o_lcd_vld   ),
-    /* verilator lint_off PINCONNECTEMPTY */
-    .o_data_vld(            ),
-    /* verilator lint_off PINCONNECTEMPTY */
+    .i_VALID   (lsu_VALID   ),
+    .o_READY   (lsu_READY   ),
+    // .o_data_vld(            ),
 
     .o_io_ledr (o_io_ledr   ),
     .o_io_ledg (o_io_ledg   ),
@@ -223,7 +239,15 @@ lsu lsu(
     .o_io_hex7 (o_io_hex7   ),
     .o_io_lcd  (o_io_lcd    ),  
     .i_io_sw   (i_io_sw     ),  
-    .i_io_btn  (i_io_btn    )   
+    .i_io_btn  (i_io_btn    ),   
+
+    .SRAM_ADDR (SRAM_ADDR   ),      
+    .SRAM_DQ   (SRAM_DQ     ),      
+    .SRAM_CE_N (SRAM_CE_N   ),      
+    .SRAM_WE_N (SRAM_WE_N   ),      
+    .SRAM_LB_N (SRAM_LB_N   ),      
+    .SRAM_UB_N (SRAM_UB_N   ),      
+    .SRAM_OE_N (SRAM_OE_N   )   
 );
 
 //////////////////////////////////////////////////////////////////////////
