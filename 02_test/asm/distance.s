@@ -28,12 +28,54 @@ main:
     jal x15, SQUARE
     add x5, x4, x18 # (Cx-Bx)^2 + (Cy-By)^2
 
+    AC2_LOOP:
+    li x1, 0x7810
+    lw x1, 0(x1)
+    li x2, 0x0000000E
+    beq x1, x2, DISPLAY_AC2
+    j AC2_LOOP
+    
+    DISPLAY_AC2:
+    li x26, 0x80000080
+    jal x28, LCD_WRITE
+    li x26, 0x80000241
+    jal x28, LCD_WRITE
+    li x26, 0x80000243
+    jal x28, LCD_WRITE
+    li x26, 0x80000232
+    jal x28, LCD_WRITE
+    li x26, 0x800000C0
+    jal x28, LCD_WRITE
+    mv x24, x3
+    jal x20, LCD_NUM_WORD_DISPLAY
+    
+    BC2_LOOP:
+    li x1, 0x7810
+    lw x1, 0(x1)
+    li x2, 0x0000000D
+    beq x1, x2, DISPLAY_BC2
+    j BC2_LOOP
+    
+    DISPLAY_BC2:
+    li x26, 0x80000080
+    jal x28, LCD_WRITE
+    li x26, 0x80000242
+    jal x28, LCD_WRITE
+    li x26, 0x80000243
+    jal x28, LCD_WRITE
+    li x26, 0x80000232
+    jal x28, LCD_WRITE
+    li x26, 0x800000C0
+    jal x28, LCD_WRITE
+    mv x24, x5
+    jal x20, LCD_NUM_WORD_DISPLAY
+
     sltu x1, x3, x5
 
     MAIN_LOOP:
     j MAIN_LOOP
 
-SQUARE: # argument x17, result x18, return x15 TODO: implement negative input
+SQUARE: # argument x17, result x18, return x15 TODO: implement negative input    
     bgt x17, x0, SQUARE_POS_INPUT
     li x18, 0xFFFFFFFF
     xor x17, x17, x18
@@ -61,7 +103,6 @@ INPUT_COORDINATE: # return x19
     and x3, x3, x2 # changed buttons when releasing
     mv x1, x2 # update previous state
 
-    # li x3, 1 # TODO: REMOVE
     bnez x3, INPUT_CAPTURE # there is a press
     j INPUT_LOOP
 
@@ -75,7 +116,6 @@ INPUT_COORDINATE: # return x19
     li x26, 0x80000080
     jal x28, LCD_WRITE
 
-    # li x5, 0x123456AF # TODO: REMOVE
     mv x24, x5
     jal x20, LCD_NUM_WORD_DISPLAY
 
@@ -97,7 +137,7 @@ LCD_NUM_WORD_DISPLAY: # argument x24, return x20
         ADD_x30:
             addi x26, x26, 0x30
         DONE_ASCII_ADD:
-        li x21, 0x8000200
+        li x21, 0x80000200
         or x26, x26, x21
         jal x28, LCD_WRITE
 
@@ -139,8 +179,8 @@ LCD_INIT: # return x29
 
 LCD_WRITE: # argument: x26, return x28
     li x25, 0x07030 # address of LCD
-    # li x27, 400000 # 20ms
-    li x27, 3 # 20ms, TODO:REMOVE
+    li x27, 400000 # 20ms
+    # li x27, 3 # 20ms, TODO:REMOVE
     CONT_WAIT_LCD:
     addi x27, x27, -1
     bne x27, x0, CONT_WAIT_LCD

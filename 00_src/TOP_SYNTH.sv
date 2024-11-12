@@ -1,7 +1,7 @@
 module TOP_SYNTH 
     import singlecycle_pkg::*;
 (
-      input logic         CLOCK_50
+      input logic         CLOCK_27
     , input logic  [17:0] SW
     , input logic  [3:0]  KEY
 
@@ -41,9 +41,9 @@ module TOP_SYNTH
         for (k = 0; k<4; k++) begin: g_btn_db
             btn_debounce #(
                 .STABLE_TIME_MS(40),
-                .CLK_PERIOD_NS (20) // clock 50MHz
+                .CLK_PERIOD_NS (40) // clock 50MHz
             ) btn_debounce (
-                .i_clk(CLOCK_50 ), 
+                .i_clk(CLOCK_27 ), 
                 .i_rst_n(SW[0]  ),
                 .i_btn(KEY[k]   ),
                 .o_btn(KEY_db[k])
@@ -67,12 +67,12 @@ module TOP_SYNTH
     // assign LCD_BLON = 1'b1; // DE2 does not have backlight
 
 lcd_ctrl #(
-    .T_PERIOD_NS(20  ), // 50MHz 
+    .T_PERIOD_NS(40  ), // 50MHz 
     .T_AS_NS    (80  ),  
     .T_PW_NS    (460 ),  
     .T_CYCE_NS  (1000)  
 ) lcd_ctrl (
-    .i_clk     (CLOCK_50),  
+    .i_clk     (CLOCK_27),  
     .i_rst_n   (SW[0]   ),    
 
     .i_vld     (lcd_vld ),  
@@ -126,9 +126,9 @@ lcd_ctrl #(
 
     singlecycle #(
         .INST_MEM_ADDR_W(10),
-        .MEM_TYPE(MEM_SRAM) // 1: sram-based
+        .MEM_TYPE(MEM_FLOP) // 1: sram-based
     ) singlecycle(
-    .i_clk     (CLOCK_50  ), 
+    .i_clk     (CLOCK_27  ), 
     .i_rst_n   (SW[0]     ),   
     .o_io_ledg (io_ledg   ),
     .o_io_ledr (io_ledr   ),

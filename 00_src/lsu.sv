@@ -81,12 +81,14 @@ module lsu
 // INPUT LOGIC
 //////////////////////////////////////////////////////////////////////////
    localparam TOTAL_BYTES    = DATA_LAST_ADDR - DATA_BASE_ADDR;
-   localparam DAT_MEM_ADDR_W = $clog2(TOTAL_BYTES);
+   // localparam DAT_MEM_ADDR_W = $clog2(TOTAL_BYTES);
+   localparam DAT_MEM_ADDR_W = $clog2(256);
    //---------------------------
    // Data memory 
    //---------------------------
    data_mem #(
-      .MEM_TYPE(MEM_TYPE)
+      .MEM_TYPE(MEM_TYPE),
+      .ADDR_W(DAT_MEM_ADDR_W)
    ) data_mem (
       .i_clk    (i_clk           ),  
       .i_rst_n  (i_rst_n         ),    
