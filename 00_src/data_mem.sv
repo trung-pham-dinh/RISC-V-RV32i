@@ -9,7 +9,7 @@ module data_mem
     , input  logic              i_rst_n
     // LSU interface
 /* verilator lint_off UNUSEDSIGNAL */
-    , input  logic [ADDR_W-1:0] i_ADDR 
+    , input  logic [17:0]       i_ADDR 
 /* verilator lint_off UNUSEDSIGNAL */
     , input  logic [31:0]       i_WDATA
     , input  logic [ 3:0]       i_BMASK

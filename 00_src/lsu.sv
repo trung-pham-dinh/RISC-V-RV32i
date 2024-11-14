@@ -81,8 +81,8 @@ module lsu
 // INPUT LOGIC
 //////////////////////////////////////////////////////////////////////////
    localparam TOTAL_BYTES    = DATA_LAST_ADDR - DATA_BASE_ADDR;
-   // localparam DAT_MEM_ADDR_W = $clog2(TOTAL_BYTES);
-   localparam DAT_MEM_ADDR_W = $clog2(256);
+   localparam DAT_MEM_ADDR_W = $clog2(TOTAL_BYTES);
+   // localparam DAT_MEM_ADDR_W = $clog2(256); // FIXME: for running on FPGA
    //---------------------------
    // Data memory 
    //---------------------------
