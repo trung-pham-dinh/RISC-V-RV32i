@@ -26,14 +26,12 @@ module sram_ctrl (
   output logic          o_ACK    ,
 
   output logic [17:0]   SRAM_ADDR,
-  inout  logic [15:0]   SRAM_DQ  ,
+  inout  wire  [15:0]   SRAM_DQ  ,
   output logic          SRAM_CE_N,
   output logic          SRAM_WE_N,
+  output logic          SRAM_OE_N,
   output logic          SRAM_LB_N,
   output logic          SRAM_UB_N,
-/* verilator lint_off UNUSEDSIGNAL */
-  input  logic          SRAM_OE_N,
-/* verilator lint_off UNUSEDSIGNAL */
 
   input logic i_clk,
   input logic i_reset
@@ -60,6 +58,9 @@ module sram_ctrl (
   logic [ 3:0] bmask_d;
   logic [ 3:0] bmask_q;
 
+  logic [15:0] DIN;
+  logic [15:0] DOUT;
+
   always_comb begin : proc_detect_state
     case (sram_state_q)
       StIdle, StWriteAck, StReadAck: begin
@@ -81,7 +82,7 @@ module sram_ctrl (
       StWrite: begin
         sram_state_d = StWriteAck;
         addr_d       = addr_q | 18'h1;
-        wdata_d      = wdata_q;
+        wdata_d      = wdata_q >> 16;
         rdata_d      = rdata_q;
         bmask_d      = bmask_q;
       end
@@ -89,14 +90,14 @@ module sram_ctrl (
         sram_state_d = StRead1;
         addr_d       = addr_q | 18'h1;
         wdata_d      = wdata_q;
-        rdata_d      = {rdata_q[31:16], SRAM_DQ};
+        rdata_d      = {rdata_q[31:16], DIN};
         bmask_d      = bmask_q;
       end
       StRead1: begin
         sram_state_d = StReadAck;
         addr_d       = addr_q;
         wdata_d      = wdata_q;
-        rdata_d      = {SRAM_DQ, rdata_q[15:0]};
+        rdata_d      = {DIN, rdata_q[15:0]};
         bmask_d      = bmask_q;
       end
       default: begin
@@ -107,7 +108,6 @@ module sram_ctrl (
         bmask_d      = '0;
       end
     endcase
-
   end
 
   always_ff @(posedge i_clk) begin
@@ -134,38 +134,60 @@ module sram_ctrl (
     end
   end
 
-  always_comb begin : proc_output
+  always_comb begin : proc_output_to_sram
     SRAM_ADDR = addr_q;
-    SRAM_DQ   = 'z;
-    SRAM_WE_N = 1'b1;
-    SRAM_CE_N = 1'b1;
     case (sram_state_q)
-      StWrite, StRead0: begin
+      StWrite: begin
+        DOUT      = wdata_q[15:0];
+        SRAM_WE_N = 1'b0;
+        SRAM_OE_N = 1'b1;
+        SRAM_CE_N = 1'b0;
         {SRAM_UB_N, SRAM_LB_N} = ~bmask_q[1:0];
       end
-      StWriteAck, StRead1, StReadAck: begin
+      StWriteAck: begin
+        DOUT      = wdata_q[15:0];
+        SRAM_WE_N = 1'b0;
+        SRAM_OE_N = 1'b1;
+        SRAM_CE_N = 1'b0;
         {SRAM_UB_N, SRAM_LB_N} = ~bmask_q[3:2];
       end
-      default: begin
+      StRead0: begin
+        DOUT      = 'z;
+        SRAM_WE_N = 1'b1;
+        SRAM_OE_N = 1'b0;
+        SRAM_CE_N = 1'b0;
         {SRAM_UB_N, SRAM_LB_N} = ~bmask_q[1:0];
       end
+      StRead1: begin
+        DOUT      = 'z;
+        SRAM_WE_N = 1'b1;
+        SRAM_OE_N = 1'b0;
+        SRAM_CE_N = 1'b0;
+        {SRAM_UB_N, SRAM_LB_N} = ~bmask_q[3:2];
+      end
+      StReadAck: begin
+        DOUT      = 'z;
+        SRAM_WE_N = 1'b1;
+        SRAM_OE_N = 1'b1;
+        SRAM_CE_N = 1'b1;
+        {SRAM_UB_N, SRAM_LB_N} = 2'b11;
+      end
+      default: begin
+        DOUT      = 'z;
+        SRAM_WE_N = 1'b1;
+        SRAM_OE_N = 1'b1;
+        SRAM_CE_N = 1'b1;
+        {SRAM_UB_N, SRAM_LB_N} = 2'b11;
+      end
     endcase
-
-    if (sram_state_q == StWrite) begin
-      SRAM_DQ   = wdata_q[15:0];
-      SRAM_WE_N = 1'b0;
-    end
-    if (sram_state_q == StWriteAck) begin
-      SRAM_DQ   = wdata_q[31:16];
-      SRAM_WE_N = 1'b0;
-    end
-
-    if (sram_state_q != StIdle) begin
-      SRAM_CE_N = 1'b0;
-    end
   end
 
-  assign o_RDATA = rdata_q;
-  assign o_ACK  = (sram_state_q == StWriteAck) || (sram_state_q == StReadAck);
+  assign  SRAM_DQ = DOUT;
+  assign  DIN = SRAM_DQ;
+
+  always_comb begin : proc_output_to_lsu
+    o_RDATA = rdata_q;
+    o_ACK  = (sram_state_q == StWriteAck) || (sram_state_q == StReadAck);
+  end
 
 endmodule

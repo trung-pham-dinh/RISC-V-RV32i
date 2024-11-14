@@ -30,7 +30,7 @@ module TOP_SYNTH
     , output logic        SRAM_WE_N
     , output logic        SRAM_LB_N
     , output logic        SRAM_UB_N
-    , input  logic        SRAM_OE_N
+    , output logic        SRAM_OE_N
 );
 
     logic [3:0] KEY_db;

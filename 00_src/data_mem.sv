@@ -27,7 +27,7 @@ module data_mem
     , output logic        SRAM_LB_N
     , output logic        SRAM_UB_N
 /* verilator lint_off UNUSEDSIGNAL */
-    , input  logic        SRAM_OE_N
+    , output logic        SRAM_OE_N
 /* verilator lint_off UNUSEDSIGNAL */
 
 );

@@ -42,7 +42,7 @@ module singlecycle
     , output logic        SRAM_WE_N
     , output logic        SRAM_LB_N
     , output logic        SRAM_UB_N
-    , input  logic        SRAM_OE_N
+    , output logic        SRAM_OE_N
 );
 //////////////////////////////////////////////////////////////////////////
 // Declaration
