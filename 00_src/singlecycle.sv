@@ -12,7 +12,7 @@ module singlecycle
     // Debug program counter
     , output logic [31:0] o_pc_debug
     // Instruction valid
-    , output logic        o_inst_vld
+    , output logic        o_insn_vld
     // Output for driving red LEDs
     , output logic [31:0] o_io_ledr
     // Output for driving green LEDs
@@ -106,7 +106,7 @@ control control(
     .o_st_mem  (st_mem    ),  
     .o_wb_sel  (wb_sel    ),  
     .o_pc_sel  (pc_sel    ),
-    .o_inst_vld(o_inst_vld),
+    .o_insn_vld(o_insn_vld),
     .o_pc_en   (pc_en     ),
     .lsu_VALID (lsu_VALID ),
     .lsu_READY (lsu_READY )

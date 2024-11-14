@@ -153,7 +153,7 @@ lcd_ctrl #(
     .SRAM_OE_N (SRAM_OE_N ),
     /* verilator lint_off PINCONNECTEMPTY */
     .o_pc_debug(),
-    .o_inst_vld()
+    .o_insn_vld()
     /* verilator lint_off PINCONNECTEMPTY */
     );
 endmodule

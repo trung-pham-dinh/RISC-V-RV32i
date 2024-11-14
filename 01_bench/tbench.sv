@@ -18,7 +18,7 @@ module tbench;
 
 /* verilator lint_off UNUSEDSIGNAL */
   logic [31:0] o_pc_debug;
-  logic        o_inst_vld;
+  logic        o_insn_vld;
   logic [31:0] o_io_ledr;
   logic [31:0] o_io_ledg;
   logic [6:0]  o_io_hex0;
