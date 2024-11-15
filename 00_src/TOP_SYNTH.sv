@@ -126,7 +126,7 @@ lcd_ctrl #(
 
     singlecycle #(
         .INST_MEM_ADDR_W(10),
-        .MEM_TYPE(MEM_FLOP) // 1: sram-based
+        .MEM_TYPE(MEM_SRAM) // 1: sram-based
     ) singlecycle(
     .i_clk     (CLOCK_27  ), 
     .i_rst_n   (SW[0]     ),   

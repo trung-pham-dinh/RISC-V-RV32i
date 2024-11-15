@@ -76,8 +76,9 @@ check_reset:
 
 check_counting:
     # Delay for 1/100th of a second (500,000 cycles at 50MHz)
-    # li t4, 250000 # only need half of needed cycles, because we loop two instructions
-    li t4, 3 # delay for simulation
+    # li t4, 250000 #50MHz only need half of needed cycles, because we loop two instructions
+    li t4, 135000 #27MHz only need half of needed cycles, because we loop two instructions
+    # li t4, 3 # delay for simulation
 delay_loop:
     addi t4, t4, -1
     bnez t4, delay_loop

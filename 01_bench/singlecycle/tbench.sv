@@ -18,7 +18,7 @@ module tbench
 
 /* verilator lint_off UNUSEDSIGNAL */
   logic [31:0] o_pc_debug;
-  logic        o_inst_vld;
+  logic        o_insn_vld;
   logic [31:0] o_io_ledr;
   logic [31:0] o_io_ledg;
   logic [6:0]  o_io_hex0;
@@ -37,7 +37,7 @@ module tbench
   logic        SRAM_WE_N;
   logic        SRAM_LB_N;
   logic        SRAM_UB_N;
-  logic        SRAM_OE_N=0;
+  logic        SRAM_OE_N;
   logic [31:0] i_io_sw = 32'h12345678;
   logic [3:0]  i_io_btn;
 
@@ -51,7 +51,7 @@ module tbench
 
   singlecycle #(
       .INST_MEM_ADDR_W(10),
-      .MEM_TYPE(MEM_FLOP)
+      .MEM_TYPE(MEM_SRAM)
   ) dut (
   .*
   );

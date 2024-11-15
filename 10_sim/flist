@@ -29,8 +29,8 @@
 
 # top testbench
 # ./../01_bench/alu/tbench.sv
-# ./../01_bench/singlecycle/tbench.sv
-./../01_bench/TOP/tbench.sv
+./../01_bench/singlecycle/tbench.sv
+# ./../01_bench/TOP/tbench.sv
 
 ./conf.vlt
 -top tbench
