@@ -36,7 +36,7 @@ main:
     j AC2_LOOP
     
     DISPLAY_AC2:
-    li x26, 0x80000080
+    li x26, 0x80000001
     jal x28, LCD_WRITE
     li x26, 0x80000241
     jal x28, LCD_WRITE
@@ -57,7 +57,7 @@ main:
     j BC2_LOOP
     
     DISPLAY_BC2:
-    li x26, 0x80000080
+    li x26, 0x80000001
     jal x28, LCD_WRITE
     li x26, 0x80000242
     jal x28, LCD_WRITE
@@ -70,7 +70,25 @@ main:
     mv x24, x5
     jal x20, LCD_NUM_WORD_DISPLAY
 
-    sltu x1, x3, x5
+    RES_LOOP:
+    li x1, 0x7810
+    lw x1, 0(x1)
+    li x2, 0x0000000B
+    beq x1, x2, DISPLAY_RES
+    j RES_LOOP
+    
+    DISPLAY_RES:
+    li x26, 0x80000001
+    jal x28, LCD_WRITE
+    
+    bltu x3, x5, DISPLAY_LT
+    li x26, 0x80000229
+    jal x28, LCD_WRITE
+    j MAIN_LOOP
+    
+    DISPLAY_LT:
+    li x26, 0x80000228
+    jal x28, LCD_WRITE
 
     MAIN_LOOP:
     j MAIN_LOOP
