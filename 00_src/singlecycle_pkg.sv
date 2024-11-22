@@ -4,12 +4,17 @@
 
 package singlecycle_pkg;
 
-    /* verilator lint_off UNUSEDPARAM */
     localparam FUNCT3_WIDTH = 3;
+  /* verilator lint_off UNUSEDPARAM */
     localparam FUNCT7_WIDTH = 7;
+  /* verilator lint_off UNUSEDPARAM */
+  /* verilator lint_off UNUSEDPARAM */
     localparam OPCODE_WIDTH = 7;
+  /* verilator lint_off UNUSEDPARAM */
     localparam REGIDX_WIDTH = 5;
+  /* verilator lint_off UNUSEDPARAM */
     localparam IMM_WIDTH    = 5;
+  /* verilator lint_off UNUSEDPARAM */
 
     // Base addresses
     localparam DATA_BASE_ADDR = 32'h0000_2000;
@@ -25,6 +30,8 @@ package singlecycle_pkg;
 
     localparam MEM_FLOP = 0;
     localparam MEM_SRAM = 1;
+
+    localparam NOP_INST = 32'h00000013; // addi x0 x0, 0
 
     typedef enum logic[1:0] { 
         A_REG  = 2'd0,
@@ -69,12 +76,25 @@ package singlecycle_pkg;
     } ImmSel_e;
     localparam IMMSEL_W = $bits(ImmSel_e);
 
-    typedef enum logic { 
-        PC_4   = 1'd0,
-        PC_ALU = 1'd1
+    typedef enum logic [1:0] { 
+        PC_IF_4   = 2'd0,
+        PC_ID_IMM = 2'd1,
+        PC_EX_ALU = 2'd2,
+        PC_EX_4   = 2'd3
     } PCSel_e;
+  /* verilator lint_off UNUSEDPARAM */
     localparam PCSEL_W = $bits(PCSel_e);
+  /* verilator lint_off UNUSEDPARAM */
 
+    typedef enum logic [1:0] { 
+        FWD_NA     = 2'd0,
+        FWD_EX_MEM = 2'd1,
+        FWD_MEM_WB = 2'd2
+    } FwdSel_e;
+  /* verilator lint_off UNUSEDPARAM */
+    localparam FWDSEL_W = $bits(FwdSel_e);
+  /* verilator lint_off UNUSEDPARAM */
+    
    //---------------------------
    // 7-SEG display control
    //---------------------------
@@ -102,7 +122,62 @@ package singlecycle_pkg;
       endcase      
    endfunction // End 7-SEG display control
 
-    /* verilator lint_off UNUSEDPARAM */
+    // Struct
+    typedef struct packed {
+        logic [31:0] pc;
+        logic [31:0] inst;
+    } IF_ID_DReg_s;
+    typedef struct packed {
+        logic [31:0]             pc;
+        logic [31:0]             inst;
+        logic [31:0]             rs1_data;
+        logic [31:0]             rs2_data;
+        logic [REGIDX_WIDTH-1:0] rs1_addr;
+        logic [REGIDX_WIDTH-1:0] rs2_addr;
+        logic [REGIDX_WIDTH-1:0] rd_addr;
+        logic [31:0]             imm;
+    } ID_EX_DReg_s;
+    typedef struct packed {
+        logic [31:0]             pc;
+        logic [31:0]             inst;
+        logic [31:0]             alu_res;
+        logic [31:0]             rs2_data;
+        logic [REGIDX_WIDTH-1:0] rd_addr;
+    } EX_MEM_DReg_s;
+    typedef struct packed {
+        logic [31:0]              pc;
+        logic [31:0]              inst;
+        logic [31:0]              ld_data;
+        logic [31:0]              alu_res;
+        logic [REGIDX_WIDTH-1:0]  rd_addr;
+    } MEM_WB_DReg_s;
+
+    typedef struct packed {
+        logic    reg_wen;   
+        logic    lsu_VALID;
+        logic    is_br_inst;
+        logic    is_jp_inst;
+        logic    is_pred_need_br;
+        logic    st_mem ;  
+        logic    br_un  ; 
+        BSel_e   b_sel  ; 
+        ASel_e   a_sel  ; 
+        ALUSel_e alu_sel;  
+        WBSel_e  wb_sel ;  
+    } ID_EX_CReg_s;
+    typedef struct packed {
+        logic    reg_wen;   
+        logic    lsu_VALID;
+        // logic    is_pred_wrong;
+        // logic    is_pred_need_br;
+        // logic    is_jalr_inst;
+        logic    st_mem ;  
+        WBSel_e  wb_sel ;  
+    } EX_MEM_CReg_s;
+    typedef struct packed {
+        logic    reg_wen;   
+        WBSel_e  wb_sel ;  
+    } MEM_WB_CReg_s;
 endpackage
 
 `endif 

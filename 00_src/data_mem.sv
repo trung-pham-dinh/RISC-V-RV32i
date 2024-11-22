@@ -77,6 +77,7 @@ module data_mem
             assign SRAM_DQ = '0;
             always_comb begin
                 SRAM_ADDR = '0;
+                SRAM_OE_N = '0;
                 SRAM_CE_N = '0;
                 SRAM_WE_N = '0;
                 SRAM_LB_N = '0;

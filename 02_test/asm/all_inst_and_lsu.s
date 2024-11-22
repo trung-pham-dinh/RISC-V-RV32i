@@ -46,7 +46,10 @@ addi x1, x1, 0x2
 addi x2, x2, -1
 j LOOP_PLUS_2
 END_LOOP_PLUS_2:
-# done -> check x1 = 0xEB397D0F
+jal x2, FUNC
+
+# done -> check x1 = 0xEB397D54
+
 
 # MEM instruction
 li x3, 0xAA
@@ -100,3 +103,6 @@ li x2, 0x2004
 lw x16, 0(x2)
 # done check x10       , x11       , x12       , x13       , x14       , x15       , x16
 #            0xDDCCBBAA, 0xFFFFFFBB, 0x000000AA, 0xFFFFCCDD, 0x0000AABB, 0xCCDDBBAA, 0xDDCCBBAA
+FUNC:
+    addi x1, x1, 69
+    jalr x0, x2, 0

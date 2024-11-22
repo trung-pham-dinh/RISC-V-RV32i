@@ -5,29 +5,22 @@ module control
       input  logic [31:0] i_inst
     /* verilator lint_off UNUSEDSIGNAL */
 
-    , input  logic        i_br_eq        
-    , input  logic        i_br_lt
-
     , output ImmSel_e     o_imm_sel
     , output logic        o_reg_wen
+    , output logic        o_is_br
+    , output logic        o_is_jp
     , output logic        o_br_un
     , output BSel_e       o_b_sel
     , output ASel_e       o_a_sel
     , output ALUSel_e     o_alu_sel
     , output logic        o_st_mem
     , output WBSel_e      o_wb_sel
-    , output PCSel_e      o_pc_sel
     , output logic        o_insn_vld
-    , output logic        o_pc_en
 
     , output logic        lsu_VALID
-    , input  logic        lsu_READY
 );
 localparam OUT_W =  {IMMSEL_W+1+1+1+1+BSEL_W+ASEL_W+ALUSEL_W+1+WBSEL_W};
 logic [OUT_W-1:0] out_ctrl;
-
-logic is_br;
-logic is_jp;
 
 always_comb begin
     (* parallel_case *) casez({i_inst[30],i_inst[14:12],i_inst[6:2]})
@@ -184,36 +177,13 @@ always_comb begin
             o_insn_vld = 1'b0;
         end
     endcase
-    {o_imm_sel,o_reg_wen,o_br_un,is_br,is_jp,o_b_sel,o_a_sel,o_alu_sel,o_st_mem,o_wb_sel} = out_ctrl;
+    {o_imm_sel,o_reg_wen,o_br_un,o_is_br,o_is_jp,o_b_sel,o_a_sel,o_alu_sel,o_st_mem,o_wb_sel} = out_ctrl;
 
 end
 
 // Need to split to another always_comb because of this: https://github.com/lowRISC/opentitan/pull/6639
 always_comb begin
-    // Calculate o_pc_sel
-    if(is_br) begin // branch
-        if(i_inst[14]) begin // branch using lt op
-            o_pc_sel = (i_inst[12] ^ i_br_lt) ? PC_ALU : PC_4;
-        end
-        else begin
-            o_pc_sel = (i_inst[12] ^ i_br_eq) ? PC_ALU : PC_4;
-        end
-    end
-    else if(is_jp) begin
-        o_pc_sel = PC_ALU;
-    end
-    else begin
-        o_pc_sel = PC_4;
-    end
-    o_pc_sel = (o_insn_vld)? o_pc_sel : PC_4;
-end
-
-always_comb begin
     lsu_VALID = o_st_mem || (o_wb_sel == WB_MEM); // LSU request
-end
-
-always_comb begin
-    o_pc_en = ~(lsu_VALID & ~lsu_READY); // TODO: if need to request other peripherals need latency, edit here
 end
 
 endmodule

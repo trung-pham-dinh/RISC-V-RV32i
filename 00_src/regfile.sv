@@ -15,9 +15,9 @@ module regfile
 );
     logic [31:0] regs [0:31];
 
-
-    assign o_rs1_data = regs[i_rs1_addr];
-    assign o_rs2_data = regs[i_rs2_addr];
+    // read the write value: resolve hazard at ID-WB stage
+    assign o_rs1_data = ((i_rs1_addr == i_rd_addr) & i_rd_wen & |i_rd_addr)? i_rd_data : regs[i_rs1_addr];
+    assign o_rs2_data = ((i_rs2_addr == i_rd_addr) & i_rd_wen & |i_rd_addr)? i_rd_data : regs[i_rs2_addr];
 
     assign regs[0] = '0;
     generate
