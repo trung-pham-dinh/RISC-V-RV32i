@@ -2,7 +2,7 @@ module hazard_ctrl
   import singlecycle_pkg::*;
 (
   /* verilator lint_off UNUSEDSIGNAL */
-    input  logic i_is_pred_need_br
+    input  logic i_is_pred_taken
   , input  logic i_is_jal_inst
   , input  logic i_lsu_VALID
   , input  logic i_lsu_READY
@@ -33,19 +33,19 @@ module hazard_ctrl
 
 // predict that need to branch at ID
 
-logic [4:0] is_pred_need_br_EN;
-logic [4:0] is_pred_need_br_FLUSH;
+logic [4:0] is_pred_taken_EN;
+logic [4:0] is_pred_taken_FLUSH;
 
 always_comb begin
-  if(i_is_pred_need_br) begin
+  if(i_is_pred_taken) begin
     //                       PC   ,IF/ID ,ID/EX ,EX/ME ,ME/WB
-    is_pred_need_br_EN    = {1'b1 ,1'b1  ,1'b1  ,1'b1  ,1'b1}; 
-    is_pred_need_br_FLUSH = {1'b0 ,1'b1  ,1'b0  ,1'b0  ,1'b0}; 
+    is_pred_taken_EN    = {1'b1 ,1'b1  ,1'b1  ,1'b1  ,1'b1}; 
+    is_pred_taken_FLUSH = {1'b0 ,1'b1  ,1'b0  ,1'b0  ,1'b0}; 
   end
   else begin
     //                      
-    is_pred_need_br_EN    = '1; 
-    is_pred_need_br_FLUSH = '0; 
+    is_pred_taken_EN    = '1; 
+    is_pred_taken_FLUSH = '0; 
   end
 end
 
@@ -138,21 +138,21 @@ end
 logic dump_c, dump_pc;
 always_comb begin
   {dump_c, o_IF_ID_creg_en, o_ID_EX_creg_en, o_EX_MEM_creg_en, o_MEM_WB_creg_en} 
-    = ( is_pred_need_br_EN 
+    = ( is_pred_taken_EN 
       & is_jal_inst_EN
       & is_lsu_VALID_EN
       & is_depend_load_EN
       & is_pred_wrong_EN
       & is_jalr_inst_EN );
   {o_pc_en, o_IF_ID_dreg_en, o_ID_EX_dreg_en, o_EX_MEM_dreg_en, o_MEM_WB_dreg_en} 
-    = ( is_pred_need_br_EN 
+    = ( is_pred_taken_EN 
       & is_jal_inst_EN
       & is_lsu_VALID_EN
       & is_depend_load_EN
       & is_pred_wrong_EN
       & is_jalr_inst_EN );
   {dump_pc, o_IF_ID_flush, o_ID_EX_flush, o_EX_MEM_flush, o_MEM_WB_flush} 
-    = ( is_pred_need_br_FLUSH 
+    = ( is_pred_taken_FLUSH 
       | is_jal_inst_FLUSH
       | is_lsu_VALID_FLUSH
       | is_depend_load_FLUSH

@@ -5,7 +5,7 @@ TOP=tbench
 SEED=1
 
 ## Do NOT change the content below unless you know what you're doing
-FLAGS =  --binary -Wall --trace --sv --timing --trace-structs --trace-fst
+FLAGS =  --binary -Wall --trace --sv --timing --trace-structs --trace-fst --trace-max-array 512 --trace-max-width 64
 FLAGS += -O3 --compiler gcc -CFLAGS -std=gnu++20
 FLAGS += -x-initial unique
 FLAGS += -x-assign unique

@@ -51,7 +51,8 @@ module singlecycle
 //////////////////////////////////////////////////////////////////////////
     // Instruction Fetch
     IF_ID_DReg_s IF_ID_dreg_d, IF_ID_dreg_q, IF_ID_dreg_rstval;
-    logic IF_ID_dreg_en, IF_ID_flush;
+    IF_ID_CReg_s IF_ID_creg_d, IF_ID_creg_q;
+    logic IF_ID_dreg_en, IF_ID_creg_en, IF_ID_flush;
     logic [REGIDX_WIDTH-1:0] ID_rs1_addr;
     logic [REGIDX_WIDTH-1:0] ID_rs2_addr;
 
@@ -59,8 +60,8 @@ module singlecycle
     ID_EX_DReg_s ID_EX_dreg_d, ID_EX_dreg_q;
     ID_EX_CReg_s ID_EX_creg_d, ID_EX_creg_q;
     logic ID_EX_dreg_en, ID_EX_creg_en, ID_EX_flush;
-    logic [31:0] ID_imm;
-    logic ID_is_pred_need_br;
+    logic [31:0] ID_pc_imm;
+    logic ID_is_btb_miss;
     logic ID_is_jal_inst;
 
     // Execution
@@ -70,6 +71,7 @@ module singlecycle
     logic [31:0] EX_alu_res;
     logic        EX_is_pred_wrong;
     logic        EX_is_jalr_inst;
+    logic        EX_actual_taken;
 
     // Mem Access
     MEM_WB_DReg_s MEM_WB_dreg_d, MEM_WB_dreg_q;
@@ -89,7 +91,7 @@ FwdSel_e fwd_rs2_sel;
 logic    lsu_READY;
 
 hazard_ctrl hazard_ctrl(
-  .i_is_pred_need_br (ID_is_pred_need_br     ),           
+  .i_is_pred_taken   (1'b0                   ),           
   .i_is_jal_inst     (ID_is_jal_inst         ),          
   .i_lsu_VALID       (EX_MEM_creg_q.lsu_VALID),        
   .i_lsu_READY       (lsu_READY              ),        
@@ -100,9 +102,7 @@ hazard_ctrl hazard_ctrl(
   .o_pc_en           (pc_en         ), 
 
   .o_IF_ID_dreg_en   (IF_ID_dreg_en ),         
-  /* verilator lint_off PINCONNECTEMPTY */
-  .o_IF_ID_creg_en   (              ),         
-  /* verilator lint_off PINCONNECTEMPTY */
+  .o_IF_ID_creg_en   (IF_ID_creg_en ),         
   .o_IF_ID_flush     (IF_ID_flush   ),       
                       
   .o_ID_EX_dreg_en   (ID_EX_dreg_en ),         
@@ -144,8 +144,11 @@ end
 // Instruction Fetch (IF)
 //////////////////////////////////////////////////////////////////////////
 logic [31:0] pc;
+logic [31:0] next_pred_pc;
 logic [31:0] inst;
 PCSel_e      pc_sel;
+logic is_pred_hit;
+logic is_pred_taken;
 
 assign o_pc_debug = pc;
 
@@ -156,10 +159,10 @@ always_ff @( posedge i_clk ) begin
     else begin
         if(pc_en) begin
             case (pc_sel)
-                PC_IF_4   : pc <= pc + 4;
-                PC_ID_IMM : pc <= IF_ID_dreg_q.pc + ID_imm; // jal, predict branch
-                PC_EX_ALU : pc <= EX_alu_res;               // jalr, actual branch
-                PC_EX_4   : pc <= ID_EX_dreg_q.pc + 4;      // jalr, actual branch
+                PC_IF_PRED: pc <= next_pred_pc;        // br, predict branch, if not a br inst -> no hit -> PC+4
+                PC_ID_JAL : pc <= ID_pc_imm;           // jal, jump address
+                PC_EX_ALU : pc <= EX_alu_res;          // jalr, actual branch
+                PC_EX_4   : pc <= ID_EX_dreg_q.pc + 4; // jalr, actual branch
                 default   : pc <= pc;
             endcase
         end
@@ -174,13 +177,13 @@ always_comb begin
         pc_sel = PC_EX_ALU;
     end
     else if(EX_is_pred_wrong) begin
-        pc_sel = (ID_EX_creg_q.is_pred_need_br)? PC_EX_4 : PC_EX_ALU; 
+        pc_sel = (ID_EX_creg_q.is_pred_taken)? PC_EX_4 : PC_EX_ALU; 
     end
-    else if(ID_is_pred_need_br | ID_is_jal_inst) begin
-        pc_sel = PC_ID_IMM;
+    else if(ID_is_jal_inst) begin
+        pc_sel = PC_ID_JAL;
     end
     else begin
-        pc_sel = PC_IF_4;
+        pc_sel = PC_IF_PRED;
     end
 end
 
@@ -191,6 +194,30 @@ inst_mem #(
     .o_inst(inst                )
 );
 
+gshare #(
+    .PC_WIDTH    (32), 
+    .INST_WIDTH  (32), 
+    .BTB_ADDR_W  (8 ), // BTB: branch table buffer. Increase this will increase hit rate
+    .PTH_ADDR_W  (5 ), // PTH: pattern history table. Increase this will increase accuracy 
+    .N_BIT_SCHEME(1 ) // N-bit saturated counter
+) branch_predictor (
+    .i_clk            (i_clk           ), 
+    .i_rst_n          (i_rst_n         ),   
+                      
+    .i_pc             (pc              ),
+    .o_hit            (is_pred_hit     ), 
+    .o_taken          (is_pred_taken   ),   
+    .o_next_pc        (next_pred_pc    ),     
+                      
+    .i_upd_btb_vld    (ID_is_btb_miss  ),         
+    .i_upd_btb_pc     (IF_ID_dreg_q.pc ),        
+    .i_upd_btb_br_addr(ID_pc_imm       ),             
+                      
+    .i_upd_pht_vld    (EX_is_pred_wrong),         
+    .i_upd_pht_pc     (ID_EX_dreg_q.pc ),        
+    .i_upd_pht_taken  (EX_actual_taken )
+);
+
 // IF/ID reg
 always_comb begin
     IF_ID_dreg_d.pc   = pc; 
@@ -198,9 +225,12 @@ always_comb begin
 
     IF_ID_dreg_rstval = '0;
     IF_ID_dreg_rstval.inst = NOP_INST;
-end
 
+    IF_ID_creg_d.is_pred_taken = (IF_ID_flush)? '0: is_pred_taken;
+    IF_ID_creg_d.is_pred_hit   = (IF_ID_flush)? '0: is_pred_hit;
+end
 `PRIM_FF_EN_RST(IF_ID_dreg_q, IF_ID_dreg_d, IF_ID_dreg_en, i_rst_n, i_clk, IF_ID_dreg_rstval)
+`PRIM_FF_EN_RST(IF_ID_creg_q, IF_ID_creg_d, IF_ID_creg_en, i_rst_n, i_clk)
 //////////////////////////////////////////////////////////////////////////
 // Instruction Decode (ID)
 //////////////////////////////////////////////////////////////////////////
@@ -269,12 +299,12 @@ always_comb begin
         IMM_J: imm = {{12{IF_ID_dreg_q.inst[31]}}, IF_ID_dreg_q.inst[19:12], IF_ID_dreg_q.inst[20], IF_ID_dreg_q.inst[30:25], IF_ID_dreg_q.inst[24:21], 1'b0};
         default: imm = '0;
     endcase
-    ID_imm = imm;
 end
 
 always_comb begin
-    ID_is_pred_need_br = is_br_inst & 1'b1; // TODO: implement branch prediction
-    ID_is_jal_inst     = is_jp_inst & (a_sel == A_PC); 
+    ID_pc_imm      = IF_ID_dreg_q.pc + imm;
+    ID_is_btb_miss = is_br_inst & ~IF_ID_creg_q.is_pred_hit; // Miss when it is a branch inst but hasnt exist in BTB
+    ID_is_jal_inst = is_jp_inst & (a_sel == A_PC); 
 end
 
 // ID/EX reg
@@ -288,17 +318,17 @@ always_comb begin
     ID_EX_dreg_d.rd_addr  = rd_addr; 
     ID_EX_dreg_d.imm      = imm; 
 
-    ID_EX_creg_d.reg_wen         = (ID_EX_flush)? 1'b0         : reg_wen;
-    ID_EX_creg_d.lsu_VALID       = (ID_EX_flush)? 1'b0         : lsu_VALID;
-    ID_EX_creg_d.is_br_inst      = (ID_EX_flush)? 1'b0         : is_br_inst;
-    ID_EX_creg_d.is_jp_inst      = (ID_EX_flush)? 1'b0         : is_jp_inst;
-    ID_EX_creg_d.is_pred_need_br = (ID_EX_flush)? '0           : ID_is_pred_need_br;
-    ID_EX_creg_d.st_mem          = (ID_EX_flush)? '0           : st_mem ;
-    ID_EX_creg_d.br_un           = (ID_EX_flush)? '0           : br_un  ;
-    ID_EX_creg_d.b_sel           = (ID_EX_flush)? BSel_e'(0)   : b_sel  ;
-    ID_EX_creg_d.a_sel           = (ID_EX_flush)? ASel_e'(0)   : a_sel  ;
-    ID_EX_creg_d.alu_sel         = (ID_EX_flush)? ALUSel_e'(0) : alu_sel;
-    ID_EX_creg_d.wb_sel          = (ID_EX_flush)? WBSel_e'(0)  : wb_sel ;
+    ID_EX_creg_d.reg_wen       = (ID_EX_flush)? 1'b0         : reg_wen;
+    ID_EX_creg_d.lsu_VALID     = (ID_EX_flush)? 1'b0         : lsu_VALID;
+    ID_EX_creg_d.is_br_inst    = (ID_EX_flush)? 1'b0         : is_br_inst;
+    ID_EX_creg_d.is_jp_inst    = (ID_EX_flush)? 1'b0         : is_jp_inst;
+    ID_EX_creg_d.is_pred_taken = (ID_EX_flush)? '0           : IF_ID_creg_q.is_pred_taken;
+    ID_EX_creg_d.st_mem        = (ID_EX_flush)? '0           : st_mem ;
+    ID_EX_creg_d.br_un         = (ID_EX_flush)? '0           : br_un  ;
+    ID_EX_creg_d.b_sel         = (ID_EX_flush)? BSel_e'(0)   : b_sel  ;
+    ID_EX_creg_d.a_sel         = (ID_EX_flush)? ASel_e'(0)   : a_sel  ;
+    ID_EX_creg_d.alu_sel       = (ID_EX_flush)? ALUSel_e'(0) : alu_sel;
+    ID_EX_creg_d.wb_sel        = (ID_EX_flush)? WBSel_e'(0)  : wb_sel ;
 end
 `PRIM_FF_EN_RST(ID_EX_dreg_q, ID_EX_dreg_d, ID_EX_dreg_en, i_rst_n, i_clk)
 `PRIM_FF_EN_RST(ID_EX_creg_q, ID_EX_creg_d, ID_EX_creg_en, i_rst_n, i_clk)
@@ -358,18 +388,13 @@ branch_comp branch_comp(
 );
 
 always_comb begin
-    if(ID_EX_creg_q.is_br_inst) begin
-        if(ID_EX_dreg_q.inst[14]) begin
-           EX_is_pred_wrong = (ID_EX_dreg_q.inst[12] ^ br_lt) ^ ID_EX_creg_q.is_pred_need_br;
-        end
-        else begin
-           EX_is_pred_wrong = (ID_EX_dreg_q.inst[12] ^ br_eq) ^ ID_EX_creg_q.is_pred_need_br;
-        end
+    if(ID_EX_dreg_q.inst[14]) begin
+        EX_actual_taken  = ID_EX_dreg_q.inst[12] ^ br_lt;
     end
     else begin
-        EX_is_pred_wrong = 1'b0;
+        EX_actual_taken  = ID_EX_dreg_q.inst[12] ^ br_eq;
     end
-
+    EX_is_pred_wrong = (ID_EX_creg_q.is_br_inst)? EX_actual_taken ^ ID_EX_creg_q.is_pred_taken : 1'b0;
     EX_is_jalr_inst = ID_EX_creg_q.is_jp_inst & (a_sel == A_REG);
 end
 
@@ -385,7 +410,7 @@ always_comb begin
     EX_MEM_creg_d.lsu_VALID       = (EX_MEM_flush)? 1'b0        : ID_EX_creg_q.lsu_VALID;
     // EX_MEM_creg_d.is_jalr_inst    = (EX_MEM_flush)? 1'b0        : EX_is_jalr_inst;
     // EX_MEM_creg_d.is_pred_wrong   = (EX_MEM_flush)? 1'b0        : EX_is_pred_wrong;
-    // EX_MEM_creg_d.is_pred_need_br = (EX_MEM_flush)? 1'b0        : ID_EX_creg_q.is_pred_need_br;
+    // EX_MEM_creg_d.is_pred_taken = (EX_MEM_flush)? 1'b0        : ID_EX_creg_q.is_pred_taken;
     EX_MEM_creg_d.st_mem          = (EX_MEM_flush)? 1'b0        : ID_EX_creg_q.st_mem;
     EX_MEM_creg_d.wb_sel          = (EX_MEM_flush)? WBSel_e'(0) : ID_EX_creg_q.wb_sel;
 end
@@ -395,7 +420,7 @@ end
 //////////////////////////////////////////////////////////////////////////
 // Memory Access (MEM)
 //////////////////////////////////////////////////////////////////////////
-logic [3:0] st_strb;
+logic [3:0]  st_strb;
 logic [31:0] ld_data_raw;
 logic [31:0] st_data;
 logic [31:0] ld_data;
@@ -424,7 +449,7 @@ lsu #(
     .i_lsu_wren(EX_MEM_creg_q.st_mem   ), 
     .o_ld_data (ld_data_raw            ),
     .o_lcd_vld (o_lcd_vld              ),
-    .i_VALID   (EX_MEM_creg_q.lsu_VALID), // FIXME: add to pipeline
+    .i_VALID   (EX_MEM_creg_q.lsu_VALID),
     .o_READY   (lsu_READY              ),
 
     .o_io_ledr (o_io_ledr              ),

@@ -1,3 +1,4 @@
+main:
 # immediate instruction
 addi x1, x0, 0x789
 xori x1, x1, 0x123
@@ -103,6 +104,7 @@ li x2, 0x2004
 lw x16, 0(x2)
 # done check x10       , x11       , x12       , x13       , x14       , x15       , x16
 #            0xDDCCBBAA, 0xFFFFFFBB, 0x000000AA, 0xFFFFCCDD, 0x0000AABB, 0xCCDDBBAA, 0xDDCCBBAA
+j main
 FUNC:
     addi x1, x1, 69
     jalr x0, x2, 0

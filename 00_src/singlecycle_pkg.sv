@@ -77,8 +77,8 @@ package singlecycle_pkg;
     localparam IMMSEL_W = $bits(ImmSel_e);
 
     typedef enum logic [1:0] { 
-        PC_IF_4   = 2'd0,
-        PC_ID_IMM = 2'd1,
+        PC_IF_PRED   = 2'd0,
+        PC_ID_JAL = 2'd1,
         PC_EX_ALU = 2'd2,
         PC_EX_4   = 2'd3
     } PCSel_e;
@@ -152,24 +152,29 @@ package singlecycle_pkg;
         logic [REGIDX_WIDTH-1:0]  rd_addr;
     } MEM_WB_DReg_s;
 
+
     typedef struct packed {
-        logic    reg_wen;   
-        logic    lsu_VALID;
-        logic    is_br_inst;
-        logic    is_jp_inst;
-        logic    is_pred_need_br;
-        logic    st_mem ;  
-        logic    br_un  ; 
-        BSel_e   b_sel  ; 
-        ASel_e   a_sel  ; 
-        ALUSel_e alu_sel;  
-        WBSel_e  wb_sel ;  
+      logic is_pred_taken;
+      logic is_pred_hit;
+    } IF_ID_CReg_s;
+    typedef struct packed {
+      logic    reg_wen;   
+      logic    lsu_VALID;
+      logic    is_br_inst;
+      logic    is_jp_inst;
+      logic    st_mem ;  
+      logic    br_un  ; 
+      BSel_e   b_sel  ; 
+      ASel_e   a_sel  ; 
+      ALUSel_e alu_sel;  
+      WBSel_e  wb_sel ;  
+      logic    is_pred_taken;
     } ID_EX_CReg_s;
     typedef struct packed {
         logic    reg_wen;   
         logic    lsu_VALID;
         // logic    is_pred_wrong;
-        // logic    is_pred_need_br;
+        // logic    is_pred_taken;
         // logic    is_jalr_inst;
         logic    st_mem ;  
         WBSel_e  wb_sel ;  

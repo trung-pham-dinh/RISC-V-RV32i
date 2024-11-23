@@ -2,6 +2,7 @@
 -I./../00_src/
 -I./../01_bench/
 ./../00_src/singlecycle_pkg.sv
+./../00_src/gshare.sv
 ./../00_src/hazard_ctrl.sv
 ./../00_src/sram_ctrl.sv
 ./../00_src/data_mem.sv
@@ -19,6 +20,7 @@
 
 # scoreboard
 ./../01_bench/scoreboard/scoreboard_alu.sv
+./../01_bench/scoreboard/scoreboard_br_pred.sv
 # ./../01_bench/scoreboard/scoreboard_pc.sv
 ./../01_bench/scoreboard/scoreboard_branch_comp.sv
 ./../01_bench/scoreboard/scoreboard_lsu_dat_handler.sv

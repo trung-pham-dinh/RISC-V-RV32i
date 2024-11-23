@@ -56,6 +56,12 @@ module tbench
   ) dut (
   .*
   );
+  scoreboard_br_pred scoreboard_br_pred(
+    .i_clk        (i_clk)  ,
+    .i_rst_n      (i_rst_n),
+    .i_is_br      (dut.ID_EX_creg_q.is_br_inst),
+    .i_is_correct (~dut.EX_is_pred_wrong)
+  );
 
   // scoreboard_alu scoreboard_alu
   // (
