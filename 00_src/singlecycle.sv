@@ -149,6 +149,10 @@ logic [31:0] inst;
 PCSel_e      pc_sel;
 logic is_pred_hit;
 logic is_pred_taken;
+logic upd_btb_vld;
+logic upd_pht_vld;
+logic upd_eval_vld;
+logic is_glb_taken, is_loc_taken;
 
 assign o_pc_debug = pc;
 
@@ -194,12 +198,15 @@ inst_mem #(
     .o_inst(inst                )
 );
 
+assign upd_btb_vld  = ID_is_btb_miss           & ID_EX_creg_en  & ~ID_EX_flush;
+assign upd_eval_vld = ID_EX_creg_q.is_pred_hit & EX_MEM_creg_en & ~EX_MEM_flush; // hit condition includes is branch already because of tag comparing
+assign upd_pht_vld  = ID_EX_creg_q.is_br_inst  & EX_MEM_creg_en & ~EX_MEM_flush; 
 gshare #(
     .PC_WIDTH    (32), 
     .INST_WIDTH  (32), 
     .BTB_ADDR_W  (8 ), // BTB: branch table buffer. Increase this will increase hit rate
-    .PTH_ADDR_W  (5 ), // PTH: pattern history table. Increase this will increase accuracy 
-    .N_BIT_SCHEME(1 ) // N-bit saturated counter
+    .GLB_PHT_ADDR_W  (5 ), // PHT: pattern history table. Increase this will increase accuracy 
+    .GLB_N_BIT_SCHEME(1 ) // N-bit saturated counter
 ) branch_predictor (
     .i_clk            (i_clk           ), 
     .i_rst_n          (i_rst_n         ),   
@@ -208,14 +215,19 @@ gshare #(
     .o_hit            (is_pred_hit     ), 
     .o_taken          (is_pred_taken   ),   
     .o_next_pc        (next_pred_pc    ),     
+    .o_glb_taken      (is_glb_taken    ),
+    .o_loc_taken      (is_loc_taken    ),
                       
-    .i_upd_btb_vld    (ID_is_btb_miss  ),         
+    .i_upd_btb_vld    (upd_btb_vld     ),         
     .i_upd_btb_pc     (IF_ID_dreg_q.pc ),        
     .i_upd_btb_br_addr(ID_pc_imm       ),             
                       
-    .i_upd_pht_vld    (EX_is_pred_wrong),         
+    .i_upd_eval_vld   (upd_eval_vld    ),         
+    .i_upd_pht_vld    (upd_pht_vld     ),         
     .i_upd_pht_pc     (ID_EX_dreg_q.pc ),        
-    .i_upd_pht_taken  (EX_actual_taken )
+    .i_upd_pht_taken  (EX_actual_taken ),
+    .i_upd_pht_pred_glb_taken (ID_EX_creg_q.is_glb_taken),
+    .i_upd_pht_pred_loc_taken (ID_EX_creg_q.is_loc_taken)
 );
 
 // IF/ID reg
@@ -228,6 +240,8 @@ always_comb begin
 
     IF_ID_creg_d.is_pred_taken = (IF_ID_flush)? '0: is_pred_taken;
     IF_ID_creg_d.is_pred_hit   = (IF_ID_flush)? '0: is_pred_hit;
+    IF_ID_creg_d.is_glb_taken  = (IF_ID_flush)? '0: is_glb_taken;
+    IF_ID_creg_d.is_loc_taken  = (IF_ID_flush)? '0: is_loc_taken;
 end
 `PRIM_FF_EN_RST(IF_ID_dreg_q, IF_ID_dreg_d, IF_ID_dreg_en, i_rst_n, i_clk, IF_ID_dreg_rstval)
 `PRIM_FF_EN_RST(IF_ID_creg_q, IF_ID_creg_d, IF_ID_creg_en, i_rst_n, i_clk)
@@ -323,6 +337,9 @@ always_comb begin
     ID_EX_creg_d.is_br_inst    = (ID_EX_flush)? 1'b0         : is_br_inst;
     ID_EX_creg_d.is_jp_inst    = (ID_EX_flush)? 1'b0         : is_jp_inst;
     ID_EX_creg_d.is_pred_taken = (ID_EX_flush)? '0           : IF_ID_creg_q.is_pred_taken;
+    ID_EX_creg_d.is_pred_hit   = (ID_EX_flush)? '0           : IF_ID_creg_q.is_pred_hit;
+    ID_EX_creg_d.is_glb_taken  = (ID_EX_flush)? '0           : IF_ID_creg_q.is_glb_taken;
+    ID_EX_creg_d.is_loc_taken  = (ID_EX_flush)? '0           : IF_ID_creg_q.is_loc_taken;
     ID_EX_creg_d.st_mem        = (ID_EX_flush)? '0           : st_mem ;
     ID_EX_creg_d.br_un         = (ID_EX_flush)? '0           : br_un  ;
     ID_EX_creg_d.b_sel         = (ID_EX_flush)? BSel_e'(0)   : b_sel  ;

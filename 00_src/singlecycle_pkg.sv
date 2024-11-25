@@ -156,6 +156,8 @@ package singlecycle_pkg;
     typedef struct packed {
       logic is_pred_taken;
       logic is_pred_hit;
+      logic is_glb_taken;
+      logic is_loc_taken;
     } IF_ID_CReg_s;
     typedef struct packed {
       logic    reg_wen;   
@@ -169,6 +171,9 @@ package singlecycle_pkg;
       ALUSel_e alu_sel;  
       WBSel_e  wb_sel ;  
       logic    is_pred_taken;
+      logic    is_pred_hit;
+      logic    is_glb_taken;
+      logic    is_loc_taken;
     } ID_EX_CReg_s;
     typedef struct packed {
         logic    reg_wen;   
