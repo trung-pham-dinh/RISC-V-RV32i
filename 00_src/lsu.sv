@@ -1,7 +1,8 @@
 module lsu 
    import singlecycle_pkg::*;
 #(
-   parameter MEM_TYPE = MEM_FLOP // 0: flop-based, 1: sram-based
+   parameter MEM_TYPE = MEM_FLOP, // 0: flop-based, 1: sram-based
+   parameter CACHE    = 1 
 )
 (
    // System
@@ -86,20 +87,69 @@ module lsu
    //---------------------------
    // Data memory 
    //---------------------------
+
+   logic [17:0]   mem_ADDR ;  
+   logic [31:0]   mem_WDATA;   
+   logic [ 3:0]   mem_BMASK;   
+   logic          mem_WREN ;  
+   logic [31:0]   mem_RDATA;  
+   logic          mem_VALID;   
+   logic          mem_READY;   
+
+   generate
+      if(CACHE) begin: g_cache
+         cache #(
+            .OFFSET_ADDR_W(3),
+            .IDX_ADDR_W   (2) 
+         ) cache (
+            .i_clk      (i_clk       ), 
+            .i_rst_n    (i_rst_n     ),   
+                         
+            .i_ADDR     ({(18-DAT_MEM_ADDR_W)'(0), i_lsu_addr[DAT_MEM_ADDR_W-1:0]}),   
+            .i_WDATA    (i_st_data   ),   
+            .i_BMASK    (i_st_strb   ),   
+            .i_WREN     (i_lsu_wren  ),    
+            .o_RDATA    (data_mem_val),   
+            .i_VALID    (vld_data_mem),   
+            .o_READY    (rdy_data_mem),      
+                         
+            .o_mem_ADDR (mem_ADDR ),       
+            .o_mem_WDATA(mem_WDATA),       
+            .o_mem_BMASK(mem_BMASK),       
+            .o_mem_WREN (mem_WREN ),        
+            .i_mem_RDATA(mem_RDATA),       
+            .o_mem_VALID(mem_VALID),       
+            .i_mem_READY(mem_READY)          
+         );
+      end
+      else begin: g_no_cache
+         always_comb begin
+            mem_ADDR  = {(18-DAT_MEM_ADDR_W)'(0), i_lsu_addr[DAT_MEM_ADDR_W-1:0]};           
+            mem_WDATA = i_st_data   ;
+            mem_BMASK = i_st_strb   ;
+            mem_WREN  = i_lsu_wren  ;
+            mem_VALID = vld_data_mem;
+
+            rdy_data_mem = mem_READY;
+            data_mem_val = mem_RDATA;
+         end 
+      end
+   endgenerate
+
+
    data_mem #(
       .MEM_TYPE(MEM_TYPE),
       .ADDR_W(DAT_MEM_ADDR_W)
    ) data_mem (
-      .i_clk    (i_clk           ),  
-      .i_rst_n  (i_rst_n         ),    
-      .i_ADDR   ({{(18-DAT_MEM_ADDR_W){1'b0}}, i_lsu_addr[DAT_MEM_ADDR_W-1:0]}),    
-      .i_WDATA  (i_st_data       ),    
-      .i_BMASK  (i_st_strb       ),    
-      .i_WREN   (i_lsu_wren      ),   
-      .o_RDATA  (data_mem_val    ),    
-
-      .i_VALID  (vld_data_mem    ),    
-      .o_READY  (rdy_data_mem    ),     
+      .i_clk    (i_clk      ),  
+      .i_rst_n  (i_rst_n    ),    
+      .i_ADDR   (mem_ADDR ),    
+      .i_WDATA  (mem_WDATA),    
+      .i_BMASK  (mem_BMASK),    
+      .i_WREN   (mem_WREN ),   
+      .o_RDATA  (mem_RDATA),    
+      .i_VALID  (mem_VALID),    
+      .o_READY  (mem_READY),     
 
       .SRAM_ADDR(SRAM_ADDR),      
       .SRAM_DQ  (SRAM_DQ  ),      

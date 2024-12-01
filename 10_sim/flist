@@ -4,6 +4,7 @@
 ./../00_src/singlecycle_pkg.sv
 ./../00_src/gshare.sv
 ./../00_src/hazard_ctrl.sv
+./../00_src/cache.sv
 ./../00_src/sram_ctrl.sv
 ./../00_src/data_mem.sv
 ./../00_src/alu.sv

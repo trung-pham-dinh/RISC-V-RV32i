@@ -87,14 +87,21 @@ package singlecycle_pkg;
   /* verilator lint_off UNUSEDPARAM */
 
     typedef enum logic [1:0] { 
-        FWD_NA     = 2'd0,
-        FWD_EX_MEM = 2'd1,
-        FWD_MEM_WB = 2'd2
-    } FwdSel_e;
+        EX_FWD_NA     = 2'd0,
+        EX_FWD_EX_MEM = 2'd1,
+        EX_FWD_MEM_WB = 2'd2
+    } EXFwdSel_e;
   /* verilator lint_off UNUSEDPARAM */
-    localparam FWDSEL_W = $bits(FwdSel_e);
+    localparam EXFWDSEL_W = $bits(EXFwdSel_e);
   /* verilator lint_off UNUSEDPARAM */
-    
+
+     typedef enum logic { 
+        MEM_FWD_NA     = 1'd0,
+        MEM_FWD_MEM_WB = 1'd1
+     } MEMFwdSel_e;
+  /* verilator lint_off UNUSEDPARAM */
+    localparam MEMFWDSEL_W = $bits(MEMFwdSel_e);
+  /* verilator lint_off UNUSEDPARAM */   
    //---------------------------
    // 7-SEG display control
    //---------------------------
@@ -143,6 +150,7 @@ package singlecycle_pkg;
         logic [31:0]             alu_res;
         logic [31:0]             rs2_data;
         logic [REGIDX_WIDTH-1:0] rd_addr;
+        logic [REGIDX_WIDTH-1:0] rs2_addr;
     } EX_MEM_DReg_s;
     typedef struct packed {
         logic [31:0]              pc;

@@ -4,7 +4,8 @@ module singlecycle
     import singlecycle_pkg::*;
 #(
     parameter INST_MEM_ADDR_W = 10, // FIXME: increase memsize 
-    parameter MEM_TYPE = MEM_FLOP // 0: flop-based, 1: sram-based
+    parameter MEM_TYPE = MEM_FLOP, // 0: flop-based, 1: sram-based
+    parameter CACHE = 1 
 )
 (
     // Global clock, acitve on the rising edge
@@ -84,11 +85,12 @@ module singlecycle
 //////////////////////////////////////////////////////////////////////////
 // Hazard
 //////////////////////////////////////////////////////////////////////////
-logic    pc_en;
-logic    EX_is_depend_load;
-FwdSel_e fwd_rs1_sel;
-FwdSel_e fwd_rs2_sel;
-logic    lsu_READY;
+logic       pc_en;
+logic       EX_is_depend_load;
+EXFwdSel_e  EX_fwd_rs1_sel;
+EXFwdSel_e  EX_fwd_rs2_sel;
+logic       lsu_READY;
+logic       is_fwd_from_WB_to_EX;
 
 hazard_ctrl hazard_ctrl(
   .i_is_pred_taken   (1'b0                   ),           
@@ -98,6 +100,7 @@ hazard_ctrl hazard_ctrl(
   .i_is_depend_load  (EX_is_depend_load      ),          
   .i_is_pred_wrong   (EX_is_pred_wrong       ),            
   .i_is_jalr_inst    (EX_is_jalr_inst        ),           
+  .i_is_fwd_from_WB_to_EX(is_fwd_from_WB_to_EX),
 
   .o_pc_en           (pc_en         ), 
 
@@ -120,18 +123,26 @@ hazard_ctrl hazard_ctrl(
 
 always_comb begin
     if     (EX_MEM_creg_q.reg_wen & (|EX_MEM_dreg_q.rd_addr) & (ID_EX_dreg_q.rs1_addr == EX_MEM_dreg_q.rd_addr))
-        fwd_rs1_sel = FWD_EX_MEM;
+        EX_fwd_rs1_sel = EX_FWD_EX_MEM;
     else if(MEM_WB_creg_q.reg_wen & (|MEM_WB_dreg_q.rd_addr) & (ID_EX_dreg_q.rs1_addr == MEM_WB_dreg_q.rd_addr))
-        fwd_rs1_sel = FWD_MEM_WB;
+        EX_fwd_rs1_sel = EX_FWD_MEM_WB;
     else 
-        fwd_rs1_sel = FWD_NA;
+        EX_fwd_rs1_sel = EX_FWD_NA;
 
     if     (EX_MEM_creg_q.reg_wen & (|EX_MEM_dreg_q.rd_addr) & (ID_EX_dreg_q.rs2_addr == EX_MEM_dreg_q.rd_addr))
-        fwd_rs2_sel = FWD_EX_MEM;
+        EX_fwd_rs2_sel = EX_FWD_EX_MEM;
     else if(MEM_WB_creg_q.reg_wen & (|MEM_WB_dreg_q.rd_addr) & (ID_EX_dreg_q.rs2_addr == MEM_WB_dreg_q.rd_addr))
-        fwd_rs2_sel = FWD_MEM_WB;
+        EX_fwd_rs2_sel = EX_FWD_MEM_WB;
     else
-        fwd_rs2_sel = FWD_NA;
+        EX_fwd_rs2_sel = EX_FWD_NA;
+
+    is_fwd_from_WB_to_EX = (EX_fwd_rs2_sel==EX_FWD_MEM_WB) | (EX_fwd_rs1_sel==EX_FWD_MEM_WB);
+
+    // if     (MEM_WB_creg_q.reg_wen & (|MEM_WB_dreg_q.rd_addr) & (EX_MEM_dreg_q.rs2_addr == MEM_WB_dreg_q.rd_addr))
+    //     MEM_fwd_rs2_sel = MEM_FWD_MEM_WB;
+    // else
+    //     MEM_fwd_rs2_sel = MEM_FWD_NA;
+    // MEM_lsu_fwd_st = MEM_fwd_rs2_sel == MEM_FWD_MEM_WB;
 
     if(ID_EX_creg_q.lsu_VALID & ~ID_EX_creg_q.st_mem & (|ID_EX_dreg_q.rd_addr) 
     & (((ID_EX_dreg_q.rd_addr == ID_rs1_addr)) | ((ID_EX_dreg_q.rd_addr == ID_rs2_addr)))) begin
@@ -139,6 +150,7 @@ always_comb begin
     end
     else EX_is_depend_load = 0; 
 end
+
 
 //////////////////////////////////////////////////////////////////////////
 // Instruction Fetch (IF)
@@ -357,32 +369,32 @@ logic [31:0] b_operand;
 logic        br_eq;
 logic        br_lt;
 logic [31:0] alu_res;
-logic [31:0] fwd_rs1_val;
-logic [31:0] fwd_rs2_val;
+logic [31:0] EX_fwd_rs1_data;
+logic [31:0] EX_fwd_rs2_data;
 
 always_comb begin
-    case (fwd_rs1_sel)
-        FWD_EX_MEM: fwd_rs1_val = EX_MEM_dreg_q.alu_res;
-        FWD_MEM_WB: fwd_rs1_val = wb_res;
-        FWD_NA    : fwd_rs1_val = ID_EX_dreg_q.rs1_data;
-        default   : fwd_rs1_val = '0; 
+    case (EX_fwd_rs1_sel)
+        EX_FWD_EX_MEM: EX_fwd_rs1_data = EX_MEM_dreg_q.alu_res;
+        EX_FWD_MEM_WB: EX_fwd_rs1_data = wb_res;
+        EX_FWD_NA    : EX_fwd_rs1_data = ID_EX_dreg_q.rs1_data;
+        default      : EX_fwd_rs1_data = '0; 
     endcase
-    case (fwd_rs2_sel)
-        FWD_EX_MEM: fwd_rs2_val = EX_MEM_dreg_q.alu_res;
-        FWD_MEM_WB: fwd_rs2_val = wb_res;
-        FWD_NA    : fwd_rs2_val = ID_EX_dreg_q.rs2_data;
-        default   : fwd_rs2_val = '0; 
+    case (EX_fwd_rs2_sel)
+        EX_FWD_EX_MEM: EX_fwd_rs2_data = EX_MEM_dreg_q.alu_res;
+        EX_FWD_MEM_WB: EX_fwd_rs2_data = wb_res;
+        EX_FWD_NA    : EX_fwd_rs2_data = ID_EX_dreg_q.rs2_data;
+        default      : EX_fwd_rs2_data = '0; 
     endcase
 
     case (ID_EX_creg_q.a_sel)
-        A_REG:   a_operand = fwd_rs1_val;
+        A_REG:   a_operand = EX_fwd_rs1_data;
         A_PC:    a_operand = ID_EX_dreg_q.pc;
         A_ZERO:  a_operand = '0;
         default: a_operand = '0;
     endcase
 
     case (ID_EX_creg_q.b_sel)
-        B_REG  : b_operand = fwd_rs2_val;
+        B_REG  : b_operand = EX_fwd_rs2_data;
         B_IMM  : b_operand = ID_EX_dreg_q.imm;
         default: b_operand = '0;
     endcase
@@ -397,8 +409,8 @@ alu alu(
 assign EX_alu_res = alu_res;
 
 branch_comp branch_comp(
-    .i_rs1_data(fwd_rs1_val       ), 
-    .i_rs2_data(fwd_rs2_val       ), 
+    .i_rs1_data(EX_fwd_rs1_data    ), 
+    .i_rs2_data(EX_fwd_rs2_data    ), 
     .i_br_un   (ID_EX_creg_q.br_un), 
     .o_br_eq   (br_eq             ),
     .o_br_lt   (br_lt             )   
@@ -420,7 +432,8 @@ always_comb begin
     EX_MEM_dreg_d.pc       = ID_EX_dreg_q.pc;
     EX_MEM_dreg_d.inst     = ID_EX_dreg_q.inst; 
     EX_MEM_dreg_d.rd_addr  = ID_EX_dreg_q.rd_addr; 
-    EX_MEM_dreg_d.rs2_data = ID_EX_dreg_q.rs2_data; 
+    EX_MEM_dreg_d.rs2_data = EX_fwd_rs2_data; 
+    EX_MEM_dreg_d.rs2_addr = ID_EX_dreg_q.rs2_addr; 
     EX_MEM_dreg_d.alu_res  = alu_res; 
 
     EX_MEM_creg_d.reg_wen         = (EX_MEM_flush)? 1'b0        : ID_EX_creg_q.reg_wen;
@@ -441,11 +454,15 @@ logic [3:0]  st_strb;
 logic [31:0] ld_data_raw;
 logic [31:0] st_data;
 logic [31:0] ld_data;
+// logic [31:0] MEM_fwd_rs2_data;
+
+// assign MEM_fwd_rs2_data = (MEM_fwd_rs2_sel == MEM_FWD_MEM_WB)? wb_res : EX_MEM_dreg_q.rs2_data;
 
 lsu_dat_handler lsu_dat_handler(
    .i_funct3  (EX_MEM_dreg_q.inst[14:12] ), 
    .i_lsb_addr(EX_MEM_dreg_q.alu_res[1:0]),
 
+//    .i_st_data (MEM_fwd_rs2_data          ),  
    .i_st_data (EX_MEM_dreg_q.rs2_data    ),  
    .o_st_data (st_data                   ),  
    .o_st_strb (st_strb                   ),  
@@ -455,7 +472,8 @@ lsu_dat_handler lsu_dat_handler(
 );
 
 lsu #(
-    .MEM_TYPE(MEM_TYPE)
+    .MEM_TYPE(MEM_TYPE),
+    .CACHE   (CACHE   )
 ) lsu (
     .i_clk     (i_clk  ),   
     .i_rst_n   (i_rst_n),    

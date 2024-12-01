@@ -52,7 +52,8 @@ module tbench
 
   singlecycle #(
       .INST_MEM_ADDR_W(10),
-      .MEM_TYPE(MEM_FLOP)
+      .MEM_TYPE(MEM_FLOP ),
+      .CACHE(1)
   ) dut (
   .*
   );
