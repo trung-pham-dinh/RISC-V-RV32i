@@ -1,4 +1,4 @@
-module gshare #(
+module tournament #(
     PC_WIDTH     = 32, 
     INST_WIDTH   = 32, 
 

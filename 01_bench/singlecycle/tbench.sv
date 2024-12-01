@@ -64,15 +64,15 @@ module tbench
     .i_is_correct (~dut.EX_is_pred_wrong)
   );
 
-  // scoreboard_alu scoreboard_alu
-  // (
-    // .i_clk        (i_clk              ),  
-    // .i_rst_n      (i_rst_n            ),  
-    // .act_alu_res  (dut.alu.o_alu_res  ),  
-    // .drv_operand_a(dut.alu.i_operand_a),    
-    // .drv_operand_b(dut.alu.i_operand_b),    
-    // .drv_alu_op   (dut.alu.i_alu_op   ) 
-  // );
+  scoreboard_alu scoreboard_alu
+  (
+    .i_clk        (i_clk              ),  
+    .i_rst_n      (i_rst_n            ),  
+    .act_alu_res  (dut.alu.o_alu_res  ),  
+    .drv_operand_a(dut.alu.i_operand_a),    
+    .drv_operand_b(dut.alu.i_operand_b),    
+    .drv_alu_op   (dut.alu.i_alu_op   ) 
+  );
 
   // scoreboard_pc scoreboard_pc(
   //   .i_clk      (i_clk                ),    
@@ -83,62 +83,62 @@ module tbench
   //   .drv_alu_res(dut.alu.o_alu_res    )      
   // );
 
-  // scoreboard_branch_comp scoreboard_branch_comp
-  // (
-    // .i_clk       (i_clk                     ),    
-    // .i_rst_n     (i_rst_n                   ),    
-    // .drv_rs1_data(dut.branch_comp.i_rs1_data),    
-    // .drv_rs2_data(dut.branch_comp.i_rs2_data),    
-    // .drv_br_un   (dut.branch_comp.i_br_un   ),  
-    // .act_br_eq   (dut.branch_comp.o_br_eq   ), 
-    // .act_br_lt   (dut.branch_comp.o_br_lt   ) 
-  // );
-// 
-  // scoreboard_lsu_dat_handler scoreboard_lsu_dat_handler
-  // (
-    // .i_clk       (i_clk                         ), 
-    // .i_rst_n     (i_rst_n                       ), 
-                  // 
-    // .drv_funct3  (dut.lsu_dat_handler.i_funct3  ),  
-    // .drv_lsb_addr(dut.lsu_dat_handler.i_lsb_addr),    
-    // .drv_ld_data (dut.lsu_dat_handler.i_ld_data ),   
-    // .drv_st_data (dut.lsu_dat_handler.i_st_data ),   
-                  // 
-    // .act_st_data (dut.lsu_dat_handler.o_st_data ),   
-    // .act_st_strb (dut.lsu_dat_handler.o_st_strb ),   
-    // .act_ld_data (dut.lsu_dat_handler.o_ld_data )   
-  // );
-// 
-  // logic [31:0] [31:0] drv_regs;
-  // generate
-      // genvar i;
-      // for (i = 0; i < 32; i++) begin
-        //  assign drv_regs[i] = dut.regfile.regs[i];
-      // end
-  // endgenerate
-  // scoreboard_regfile scoreboard_regfile 
-  // (
-    // .i_clk   (i_clk   ), 
-    // .i_rst_n (i_rst_n ), 
-    // .drv_regs(drv_regs)
-  // );
-// 
-  // scoreboard_lsu scoreboard_lsu(
-    // .i_clk           (i_clk               ),   
-    // .i_rst_n         (i_rst_n             ),   
-                      // 
-    // .drv_VALID       (dut.lsu.i_VALID     ),   
-    // .drv_lsu_addr    (dut.lsu.i_lsu_addr  ),      
-                      // 
-    // .act_vld_data_mem(dut.lsu.vld_data_mem),          
-    // .act_vld_ledr    (dut.lsu.vld_ledr    ),          
-    // .act_vld_ledg    (dut.lsu.vld_ledg    ),          
-    // .act_vld_seg7    (dut.lsu.vld_seg7    ),          
-    // .act_vld_lcd     (dut.lsu.vld_lcd     ),          
-    // .act_vld_sw      (dut.lsu.vld_sw      ),          
-    // .act_vld_btn     (dut.lsu.vld_btn     ),          
-    // .act_vld_timer   (dut.lsu.vld_timer   )
-  // );
+  scoreboard_branch_comp scoreboard_branch_comp
+  (
+    .i_clk       (i_clk                     ),    
+    .i_rst_n     (i_rst_n                   ),    
+    .drv_rs1_data(dut.branch_comp.i_rs1_data),    
+    .drv_rs2_data(dut.branch_comp.i_rs2_data),    
+    .drv_br_un   (dut.branch_comp.i_br_un   ),  
+    .act_br_eq   (dut.branch_comp.o_br_eq   ), 
+    .act_br_lt   (dut.branch_comp.o_br_lt   ) 
+  );
+
+  scoreboard_lsu_dat_handler scoreboard_lsu_dat_handler
+  (
+    .i_clk       (i_clk                         ), 
+    .i_rst_n     (i_rst_n                       ), 
+                  
+    .drv_funct3  (dut.lsu_dat_handler.i_funct3  ),  
+    .drv_lsb_addr(dut.lsu_dat_handler.i_lsb_addr),    
+    .drv_ld_data (dut.lsu_dat_handler.i_ld_data ),   
+    .drv_st_data (dut.lsu_dat_handler.i_st_data ),   
+                  
+    .act_st_data (dut.lsu_dat_handler.o_st_data ),   
+    .act_st_strb (dut.lsu_dat_handler.o_st_strb ),   
+    .act_ld_data (dut.lsu_dat_handler.o_ld_data )   
+  );
+
+  logic [31:0] [31:0] drv_regs;
+  generate
+      genvar i;
+      for (i = 0; i < 32; i++) begin
+         assign drv_regs[i] = dut.regfile.regs[i];
+      end
+  endgenerate
+  scoreboard_regfile scoreboard_regfile 
+  (
+    .i_clk   (i_clk   ), 
+    .i_rst_n (i_rst_n ), 
+    .drv_regs(drv_regs)
+  );
+
+  scoreboard_lsu scoreboard_lsu(
+    .i_clk           (i_clk               ),   
+    .i_rst_n         (i_rst_n             ),   
+                      
+    .drv_VALID       (dut.lsu.i_VALID     ),   
+    .drv_lsu_addr    (dut.lsu.i_lsu_addr  ),      
+                      
+    .act_vld_data_mem(dut.lsu.vld_data_mem),          
+    .act_vld_ledr    (dut.lsu.vld_ledr    ),          
+    .act_vld_ledg    (dut.lsu.vld_ledg    ),          
+    .act_vld_seg7    (dut.lsu.vld_seg7    ),          
+    .act_vld_lcd     (dut.lsu.vld_lcd     ),          
+    .act_vld_sw      (dut.lsu.vld_sw      ),          
+    .act_vld_btn     (dut.lsu.vld_btn     ),          
+    .act_vld_timer   (dut.lsu.vld_timer   )
+  );
 
 endmodule : tbench
 

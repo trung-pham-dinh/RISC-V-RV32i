@@ -213,7 +213,7 @@ inst_mem #(
 assign upd_btb_vld  = ID_is_btb_miss           & ID_EX_creg_en  & ~ID_EX_flush;
 assign upd_eval_vld = ID_EX_creg_q.is_pred_hit & EX_MEM_creg_en & ~EX_MEM_flush; // hit condition includes is branch already because of tag comparing
 assign upd_pht_vld  = ID_EX_creg_q.is_br_inst  & EX_MEM_creg_en & ~EX_MEM_flush; 
-gshare #(
+tournament #(
     .PC_WIDTH    (32), 
     .INST_WIDTH  (32), 
     .BTB_ADDR_W  (8 ), // BTB: branch table buffer. Increase this will increase hit rate
