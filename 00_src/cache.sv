@@ -103,7 +103,7 @@ module cache #(
 //////////////////////////////////////////////////////////////////////////
 // CACHE LOGIC
 //////////////////////////////////////////////////////////////////////////   
-    `PRIM_FF_RST(cache_addr , cache_addr_next , i_rst_n, i_clk)
+    `PRIM_FF_RST(cache_addr , cache_addr_next , i_rst_n, i_clk, '0)
     `PRIM_FF_RST(cache_state, cache_state_next, i_rst_n, i_clk, CACHE_IDLE)
 
     always_comb begin
@@ -144,7 +144,7 @@ module cache #(
     end
 
     always_comb begin
-        o_mem_VALID = cache_state inside {CACHE_FETCH, CACHE_WRITE_BACK};
+        o_mem_VALID = (cache_state == CACHE_FETCH) || (cache_state == CACHE_WRITE_BACK);
 
         if(cache_state == CACHE_WRITE_BACK)
             o_mem_ADDR  = {cache_entry[i_ADDR[IDX_START +: IDX_ADDR_W]].tag, cache_addr};

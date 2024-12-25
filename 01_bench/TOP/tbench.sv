@@ -1,7 +1,8 @@
 `include "timescale.svh"
+`include "tlib.svh"
 
 `define RESETPERIOD 55
-`define FINISH      115000
+`define FINISH      1150000
 
 module tbench
   import singlecycle_pkg::*;
@@ -14,9 +15,9 @@ module tbench
   end
 
 /* verilator lint_off UNUSEDSIGNAL */
-    logic         CLOCK_50;
+    logic         CLOCK_27;
     logic  [17:0] SW = 18'd1231;
-    logic  [3:0]  KEY;
+    logic  [3:0]  KEY = 4'd0000;
 
     logic [8:0]  LEDG;
     logic [17:0] LEDR;
@@ -47,10 +48,10 @@ module tbench
 /* verilator lint_off UNUSEDSIGNAL */
   logic i_rst_n;
 
-  initial tsk_clock_gen(CLOCK_50);
+  initial tsk_clock_gen(CLOCK_27);
   initial tsk_reset(i_rst_n, `RESETPERIOD);
   initial tsk_timeout(`FINISH);
-  initial tsk_button_gen(KEY);
+  // initial tsk_button_gen(KEY);
 //   initial tsk_switch_gen(SW);
 
   assign SW[0] = i_rst_n;
@@ -59,5 +60,12 @@ module tbench
   ) dut (
   .*
   );
+
+  // scoreboard_br_pred scoreboard_br_pred(
+  //   .i_clk        (CLOCK_27)  ,
+  //   .i_rst_n      (i_rst_n),
+  //   .i_is_br      (dut.singlecycle.ID_EX_creg_q.is_br_inst),
+  //   .i_is_correct (~dut.singlecycle.EX_is_pred_wrong)
+  // );
 
 endmodule : tbench

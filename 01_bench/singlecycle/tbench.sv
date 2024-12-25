@@ -2,7 +2,7 @@
 `include "tlib.svh"
 
 `define RESETPERIOD 55
-`define FINISH      115000
+`define FINISH      1150000
 
 module tbench
   import singlecycle_pkg::*;

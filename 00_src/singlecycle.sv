@@ -256,7 +256,7 @@ always_comb begin
     IF_ID_creg_d.is_loc_taken  = (IF_ID_flush)? '0: is_loc_taken;
 end
 `PRIM_FF_EN_RST(IF_ID_dreg_q, IF_ID_dreg_d, IF_ID_dreg_en, i_rst_n, i_clk, IF_ID_dreg_rstval)
-`PRIM_FF_EN_RST(IF_ID_creg_q, IF_ID_creg_d, IF_ID_creg_en, i_rst_n, i_clk)
+`PRIM_FF_EN_RST(IF_ID_creg_q, IF_ID_creg_d, IF_ID_creg_en, i_rst_n, i_clk, '0)
 //////////////////////////////////////////////////////////////////////////
 // Instruction Decode (ID)
 //////////////////////////////////////////////////////////////////////////
@@ -358,9 +358,10 @@ always_comb begin
     ID_EX_creg_d.a_sel         = (ID_EX_flush)? ASel_e'(0)   : a_sel  ;
     ID_EX_creg_d.alu_sel       = (ID_EX_flush)? ALUSel_e'(0) : alu_sel;
     ID_EX_creg_d.wb_sel        = (ID_EX_flush)? WBSel_e'(0)  : wb_sel ;
+    ID_EX_creg_d.is_inst_vld   = (ID_EX_flush)? 1'b0         : o_insn_vld;
 end
-`PRIM_FF_EN_RST(ID_EX_dreg_q, ID_EX_dreg_d, ID_EX_dreg_en, i_rst_n, i_clk)
-`PRIM_FF_EN_RST(ID_EX_creg_q, ID_EX_creg_d, ID_EX_creg_en, i_rst_n, i_clk)
+`PRIM_FF_EN_RST(ID_EX_dreg_q, ID_EX_dreg_d, ID_EX_dreg_en, i_rst_n, i_clk, '0)
+`PRIM_FF_EN_RST(ID_EX_creg_q, ID_EX_creg_d, ID_EX_creg_en, i_rst_n, i_clk, '0)
 //////////////////////////////////////////////////////////////////////////
 // Execution (EX)
 //////////////////////////////////////////////////////////////////////////
@@ -443,9 +444,10 @@ always_comb begin
     // EX_MEM_creg_d.is_pred_taken = (EX_MEM_flush)? 1'b0        : ID_EX_creg_q.is_pred_taken;
     EX_MEM_creg_d.st_mem          = (EX_MEM_flush)? 1'b0        : ID_EX_creg_q.st_mem;
     EX_MEM_creg_d.wb_sel          = (EX_MEM_flush)? WBSel_e'(0) : ID_EX_creg_q.wb_sel;
+    EX_MEM_creg_d.is_inst_vld     = (EX_MEM_flush)? 1'b0        : ID_EX_creg_q.is_inst_vld;
 end
-`PRIM_FF_EN_RST(EX_MEM_dreg_q, EX_MEM_dreg_d, EX_MEM_dreg_en,i_rst_n, i_clk)
-`PRIM_FF_EN_RST(EX_MEM_creg_q, EX_MEM_creg_d, EX_MEM_creg_en,i_rst_n, i_clk)
+`PRIM_FF_EN_RST(EX_MEM_dreg_q, EX_MEM_dreg_d, EX_MEM_dreg_en,i_rst_n, i_clk, '0)
+`PRIM_FF_EN_RST(EX_MEM_creg_q, EX_MEM_creg_d, EX_MEM_creg_en,i_rst_n, i_clk, '0)
 
 //////////////////////////////////////////////////////////////////////////
 // Memory Access (MEM)
@@ -520,11 +522,12 @@ always_comb begin
     MEM_WB_dreg_d.ld_data  = ld_data; 
     MEM_WB_dreg_d.alu_res  = EX_MEM_dreg_q.alu_res; 
 
-    MEM_WB_creg_d.reg_wen  = (MEM_WB_flush)? 1'b0        : EX_MEM_creg_q.reg_wen;
-    MEM_WB_creg_d.wb_sel   = (MEM_WB_flush)? WBSel_e'(0) : EX_MEM_creg_q.wb_sel ;
+    MEM_WB_creg_d.reg_wen     = (MEM_WB_flush)? 1'b0        : EX_MEM_creg_q.reg_wen;
+    MEM_WB_creg_d.wb_sel      = (MEM_WB_flush)? WBSel_e'(0) : EX_MEM_creg_q.wb_sel ;
+    MEM_WB_creg_d.is_inst_vld = (MEM_WB_flush)? 1'b0        : EX_MEM_creg_q.is_inst_vld;
 end
-`PRIM_FF_EN_RST(MEM_WB_dreg_q, MEM_WB_dreg_d, MEM_WB_dreg_en,i_rst_n, i_clk)
-`PRIM_FF_EN_RST(MEM_WB_creg_q, MEM_WB_creg_d, MEM_WB_creg_en,i_rst_n, i_clk)
+`PRIM_FF_EN_RST(MEM_WB_dreg_q, MEM_WB_dreg_d, MEM_WB_dreg_en,i_rst_n, i_clk, '0)
+`PRIM_FF_EN_RST(MEM_WB_creg_q, MEM_WB_creg_d, MEM_WB_creg_en,i_rst_n, i_clk, '0)
 //////////////////////////////////////////////////////////////////////////
 // Write Back (WB)
 //////////////////////////////////////////////////////////////////////////
@@ -538,4 +541,29 @@ always_comb begin
         default: wb_res = '0;
     endcase 
 end
+
+//////////////////////////////////////////////////////////////////////////
+// Evaluation
+//////////////////////////////////////////////////////////////////////////
+
+evaluation #(
+    .BR_THRSH_EVAL  (1000),
+    .IPC_THRSH_EVAL (1000)
+) evaluation (
+    .i_clk               (i_clk  ),       
+    .i_rst_n             (i_rst_n), 
+                          
+    .i_is_br_inst        (ID_EX_creg_q.is_br_inst),     
+    .i_is_br_pred_correct(~EX_is_pred_wrong      ),
+    /* verilator lint_off PINCONNECTEMPTY */
+    .o_br_correct_eval   (),   
+    /* verilator lint_off PINCONNECTEMPTY */
+                          
+    .i_is_inst_vld       (MEM_WB_creg_q.is_inst_vld), // If flush exists at a stage, vld = 0 -> NOP will be counted as invalid 
+    .i_is_inst_done      (MEM_WB_creg_en           ),    
+    /* verilator lint_off PINCONNECTEMPTY */
+    .o_ipc_eval          ()     
+    /* verilator lint_off PINCONNECTEMPTY */
+);
+
 endmodule

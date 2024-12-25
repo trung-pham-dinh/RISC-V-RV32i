@@ -1,8 +1,11 @@
 # +define+AHAI
++define+DV
+
 -I./../00_src/
 -I./../01_bench/
 ./../00_src/singlecycle_pkg.sv
 ./../00_src/tournament.sv
+./../00_src/evaluation.sv
 ./../00_src/hazard_ctrl.sv
 ./../00_src/cache.sv
 ./../00_src/sram_ctrl.sv
@@ -32,8 +35,8 @@
 
 # top testbench
 # ./../01_bench/alu/tbench.sv
-./../01_bench/singlecycle/tbench.sv
-# ./../01_bench/TOP/tbench.sv
+# ./../01_bench/singlecycle/tbench.sv
+./../01_bench/TOP/tbench.sv
 
 ./conf.vlt
 -top tbench

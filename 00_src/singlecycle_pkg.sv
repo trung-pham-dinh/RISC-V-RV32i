@@ -182,19 +182,22 @@ package singlecycle_pkg;
       logic    is_pred_hit;
       logic    is_glb_taken;
       logic    is_loc_taken;
+      logic    is_inst_vld; // for evaluation
     } ID_EX_CReg_s;
     typedef struct packed {
-        logic    reg_wen;   
-        logic    lsu_VALID;
-        // logic    is_pred_wrong;
-        // logic    is_pred_taken;
-        // logic    is_jalr_inst;
-        logic    st_mem ;  
-        WBSel_e  wb_sel ;  
+      logic    reg_wen;   
+      logic    lsu_VALID;
+      // logic    is_pred_wrong;
+      // logic    is_pred_taken;
+      // logic    is_jalr_inst;
+      logic    st_mem ;  
+      WBSel_e  wb_sel ;  
+      logic    is_inst_vld; // for evaluation
     } EX_MEM_CReg_s;
     typedef struct packed {
-        logic    reg_wen;   
-        WBSel_e  wb_sel ;  
+      logic    reg_wen;   
+      WBSel_e  wb_sel ;  
+      logic    is_inst_vld; // for evaluation
     } MEM_WB_CReg_s;
 endpackage
 
