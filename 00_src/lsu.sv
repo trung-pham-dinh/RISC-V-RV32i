@@ -43,6 +43,8 @@ module lsu
    , output logic        SRAM_LB_N
    , output logic        SRAM_UB_N
    , output logic        SRAM_OE_N
+   // for evaluation
+   , output logic        vld_data_mem
 );
    
    // Internal signals
@@ -53,7 +55,7 @@ module lsu
    logic [31:0] seg7_4to7_reg;
    logic [31:0] lcd_reg;
    logic [31:0] data_mem_val;
-   logic        vld_data_mem, rdy_data_mem;
+   logic        rdy_data_mem;
    logic        vld_ledr;
    logic        vld_ledg;
    logic        vld_seg7;

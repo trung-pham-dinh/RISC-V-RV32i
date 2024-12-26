@@ -217,8 +217,11 @@ tournament #(
     .PC_WIDTH    (32), 
     .INST_WIDTH  (32), 
     .BTB_ADDR_W  (8 ), // BTB: branch table buffer. Increase this will increase hit rate
+    .EVAL_N_BIT_SCHEME(3), // N-bit saturated counter. Increase this will increase hesitation when changing from global to local or vice versa
     .GLB_PHT_ADDR_W  (5 ), // PHT: pattern history table. Increase this will increase accuracy 
-    .GLB_N_BIT_SCHEME(1 ) // N-bit saturated counter
+    .GLB_N_BIT_SCHEME(1 ), // N-bit saturated counter
+    .LOC_PHT_ADDR_W  (8 ), // PHT: pattern history table. Increase this will increase accuracy 
+    .LOC_N_BIT_SCHEME(2 )  // N-bit saturated counter
 ) branch_predictor (
     .i_clk            (i_clk           ), 
     .i_rst_n          (i_rst_n         ),   
@@ -457,6 +460,7 @@ logic [31:0] ld_data_raw;
 logic [31:0] st_data;
 logic [31:0] ld_data;
 // logic [31:0] MEM_fwd_rs2_data;
+logic vld_data_mem;
 
 // assign MEM_fwd_rs2_data = (MEM_fwd_rs2_sel == MEM_FWD_MEM_WB)? wb_res : EX_MEM_dreg_q.rs2_data;
 
@@ -509,7 +513,9 @@ lsu #(
     .SRAM_WE_N (SRAM_WE_N              ),      
     .SRAM_LB_N (SRAM_LB_N              ),      
     .SRAM_UB_N (SRAM_UB_N              ),      
-    .SRAM_OE_N (SRAM_OE_N              )   
+    .SRAM_OE_N (SRAM_OE_N              ),
+
+    .vld_data_mem (vld_data_mem) // for evaluation  
 );
 
 
@@ -562,7 +568,13 @@ evaluation #(
     .i_is_inst_vld       (MEM_WB_creg_q.is_inst_vld), // If flush exists at a stage, vld = 0 -> NOP will be counted as invalid 
     .i_is_inst_done      (MEM_WB_creg_en           ),    
     /* verilator lint_off PINCONNECTEMPTY */
-    .o_ipc_eval          ()     
+    .o_ipc_eval          (),     
+    /* verilator lint_off PINCONNECTEMPTY */
+
+    .i_lsu_valid (EX_MEM_creg_q.lsu_VALID & vld_data_mem),
+    .i_lsu_ready (lsu_READY),
+    /* verilator lint_off PINCONNECTEMPTY */
+    .o_mem_pen   ()
     /* verilator lint_off PINCONNECTEMPTY */
 );
 

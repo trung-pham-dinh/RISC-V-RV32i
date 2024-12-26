@@ -63,7 +63,24 @@ module data_mem
         if (MEM_TYPE == MEM_FLOP) begin: g_flop_mem
             logic [3:0][7:0] mem [0: N_WORDS-1];
 
-            assign mem_ack   = 1'b1; // always ready to read/write
+            localparam N_STAGES = 10;
+            if(N_STAGES == 0) begin: ack_no_latency
+                assign mem_ack = 1'b1; // always ready to read/write
+            end
+            else begin: ack_latency
+                logic [N_STAGES:1] mem_ack_reg;
+                genvar l;
+                for(l=0; l<N_STAGES; l++) begin: g_latency
+                    if(l==0) begin: g_0_case
+                        `PRIM_FF_EN_RST(mem_ack_reg[1], mem_req, 1'b1, i_rst_n, i_clk, '0)
+                    end
+                    else begin: g_esle_case
+                        `PRIM_FF_EN_RST(mem_ack_reg[l+1], mem_ack_reg[l], 1'b1, i_rst_n, i_clk, '0)
+                    end
+                end
+                assign mem_ack = mem_ack_reg[N_STAGES];
+            end
+
             assign o_RDATA = mem[i_ADDR[ADDR_W-1:2]];
             always_ff@(posedge i_clk)	begin
                 if(mem_req & i_WREN) begin
