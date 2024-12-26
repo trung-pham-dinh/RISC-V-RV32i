@@ -1,7 +1,8 @@
 `ifndef SINGLECYCLE_SVH
 `define SINGLECYCLE_SVH
 
-`define INST_MEM_PATH "./../02_test/dump/all_inst_and_lsu.mem"
+// `define INST_MEM_PATH "./../02_test/dump/all_inst_and_lsu.mem"
+`define INST_MEM_PATH "./../02_test/dump/branch_pred_benchmark.mem"
 // `define INST_MEM_PATH "./../02_test/dump/cache.mem"
 // `define INST_MEM_PATH "./../02_test/dump/stopwatch.mem"
 // `define INST_MEM_PATH "./../02_test/dump/all_alu.mem"
@@ -18,7 +19,7 @@
 
 `define PRIM_FF_EN_RST(OUT, IN, EN, RST_N, CLOCK, RST_VAL) \
     always_ff @( posedge CLOCK ) begin : \ff_``OUT   \
-       OUT <= (~RST_N) ? RST_VAL : (EN)? IN : OUT;                  \
+       OUT <= (~RST_N) ? RST_VAL : (EN)? IN : OUT;   \
     end : \ff_``OUT
 
 `endif

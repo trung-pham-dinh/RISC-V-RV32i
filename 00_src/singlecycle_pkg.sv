@@ -102,6 +102,14 @@ package singlecycle_pkg;
   /* verilator lint_off UNUSEDPARAM */
     localparam MEMFWDSEL_W = $bits(MEMFwdSel_e);
   /* verilator lint_off UNUSEDPARAM */   
+
+    typedef enum logic [1:0] { 
+        PRED_NONE = 2'b00, // always taken
+        PRED_LOC  = 2'b01, // use local prediction
+        PRED_GLB  = 2'b10, // use global prediction
+        PRED_BOTH = 2'b11  // use both prediction types
+    } PreStrategy_e;
+
    //---------------------------
    // 7-SEG display control
    //---------------------------
@@ -199,6 +207,8 @@ package singlecycle_pkg;
       WBSel_e  wb_sel ;  
       logic    is_inst_vld; // for evaluation
     } MEM_WB_CReg_s;
+
+
 endpackage
 
 `endif 

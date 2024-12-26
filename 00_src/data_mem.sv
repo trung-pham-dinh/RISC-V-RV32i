@@ -63,7 +63,7 @@ module data_mem
         if (MEM_TYPE == MEM_FLOP) begin: g_flop_mem
             logic [3:0][7:0] mem [0: N_WORDS-1];
 
-            localparam N_STAGES = 10;
+            localparam N_STAGES = 10; // used for simulating access memory with latency
             if(N_STAGES == 0) begin: ack_no_latency
                 assign mem_ack = 1'b1; // always ready to read/write
             end

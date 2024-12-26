@@ -216,10 +216,11 @@ assign upd_pht_vld  = ID_EX_creg_q.is_br_inst  & EX_MEM_creg_en & ~EX_MEM_flush;
 tournament #(
     .PC_WIDTH    (32), 
     .INST_WIDTH  (32), 
+    .PRED_STRATEGY(PRED_BOTH),
     .BTB_ADDR_W  (8 ), // BTB: branch table buffer. Increase this will increase hit rate
     .EVAL_N_BIT_SCHEME(3), // N-bit saturated counter. Increase this will increase hesitation when changing from global to local or vice versa
-    .GLB_PHT_ADDR_W  (5 ), // PHT: pattern history table. Increase this will increase accuracy 
-    .GLB_N_BIT_SCHEME(1 ), // N-bit saturated counter
+    .GLB_PHT_ADDR_W  (7 ), // PHT: pattern history table. Increase this will increase accuracy 
+    .GLB_N_BIT_SCHEME(2 ), // N-bit saturated counter
     .LOC_PHT_ADDR_W  (8 ), // PHT: pattern history table. Increase this will increase accuracy 
     .LOC_N_BIT_SCHEME(2 )  // N-bit saturated counter
 ) branch_predictor (

@@ -1,16 +1,19 @@
-module tournament #(
-    PC_WIDTH     = 32, 
-    INST_WIDTH   = 32, 
+module tournament 
+    import singlecycle_pkg::*;
+#(
+    parameter PC_WIDTH     = 32, 
+    parameter INST_WIDTH   = 32, 
+    parameter PRED_STRATEGY = PRED_BOTH,
 
-    BTB_ADDR_W   = 9, // BTB: branch table buffer. Increase this will increase hit rate
+    parameter BTB_ADDR_W   = 9, // BTB: branch table buffer. Increase this will increase hit rate
 
-    EVAL_N_BIT_SCHEME = 3,
+    parameter EVAL_N_BIT_SCHEME = 3,
 
-    GLB_PHT_ADDR_W   = 8, // PHT: pattern history table. Increase this will increase accuracy 
-    GLB_N_BIT_SCHEME = 2,  // N-bit saturated counter
+    parameter GLB_PHT_ADDR_W   = 8, // PHT: pattern history table. Increase this will increase accuracy 
+    parameter GLB_N_BIT_SCHEME = 2,  // N-bit saturated counter
 
-    LOC_PHT_ADDR_W   = 8, // PHT: pattern history table. Increase this will increase accuracy 
-    LOC_N_BIT_SCHEME = 2  // N-bit saturated counter
+    parameter LOC_PHT_ADDR_W   = 8, // PHT: pattern history table. Increase this will increase accuracy 
+    parameter LOC_N_BIT_SCHEME = 2  // N-bit saturated counter
 ) (
       input  logic i_clk
     , input  logic i_rst_n
@@ -88,7 +91,13 @@ module tournament #(
         // see if it is a hit
         o_hit     = (btb_entry.tag == pc_btb_tag) & btb_entry.vld;
         // select next pc based on hit and predict
-        o_taken   = o_hit & (eval_sel_glb ? glb_predict_taken : loc_predict_taken);
+        case (PRED_STRATEGY)
+            PRED_BOTH: o_taken = o_hit & (eval_sel_glb ? glb_predict_taken : loc_predict_taken);
+            PRED_LOC : o_taken = o_hit & loc_predict_taken;
+            PRED_GLB : o_taken = o_hit & glb_predict_taken;
+            PRED_NONE: o_taken = o_hit; // always taken
+            default:   o_taken = 1'b0;
+        endcase
         o_next_pc = (o_taken)? btb_entry.br_addr : PC_WIDTH'(i_pc + 4);
         o_glb_taken = o_hit & glb_predict_taken;
         o_loc_taken = o_hit & loc_predict_taken;
