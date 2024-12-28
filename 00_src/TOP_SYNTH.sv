@@ -1,5 +1,5 @@
 module TOP_SYNTH 
-    import singlecycle_pkg::*;
+    import rv32i_pkg::*;
 (
       input logic         CLOCK_27
     , input logic  [17:0] SW
@@ -124,11 +124,11 @@ lcd_ctrl #(
         HEX7 = bcd_to_7seg(io_hex7[3:0]);
     end
 
-    singlecycle #(
+    rv32i #(
         .INST_MEM_ADDR_W(10),
         .MEM_TYPE(MEM_FLOP), // 1: sram-based
         .CACHE(1)
-    ) singlecycle(
+    ) rv32i(
     .i_clk     (CLOCK_27  ), 
     .i_rst_n   (SW[0]     ),   
     .o_io_ledg (io_ledg   ),

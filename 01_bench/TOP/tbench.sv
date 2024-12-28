@@ -5,7 +5,7 @@
 `define FINISH      1150000
 
 module tbench
-  import singlecycle_pkg::*;
+  import rv32i_pkg::*;
 ();
 
 // Wave dumping
@@ -64,8 +64,8 @@ module tbench
   // scoreboard_br_pred scoreboard_br_pred(
   //   .i_clk        (CLOCK_27)  ,
   //   .i_rst_n      (i_rst_n),
-  //   .i_is_br      (dut.singlecycle.ID_EX_creg_q.is_br_inst),
-  //   .i_is_correct (~dut.singlecycle.EX_is_pred_wrong)
+  //   .i_is_br      (dut.rv32i.ID_EX_creg_q.is_br_inst),
+  //   .i_is_correct (~dut.rv32i.EX_is_pred_wrong)
   // );
 
 endmodule : tbench

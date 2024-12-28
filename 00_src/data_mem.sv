@@ -1,5 +1,5 @@
 module data_mem 
-    import singlecycle_pkg::*;
+    import rv32i_pkg::*;
 #(
     parameter MEM_TYPE = 1, // 0: flop-based, 1: SRAM-based
     parameter ADDR_W   = 18 // this param is only for MEM_TYPE == 0

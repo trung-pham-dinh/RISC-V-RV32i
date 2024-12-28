@@ -1,5 +1,5 @@
 module tournament 
-    import singlecycle_pkg::*;
+    import rv32i_pkg::*;
 #(
     parameter PC_WIDTH     = 32, 
     parameter INST_WIDTH   = 32, 

@@ -1,5 +1,5 @@
 module lsu_dat_handler 
-    import singlecycle_pkg::*;
+    import rv32i_pkg::*;
 (
       input  logic [FUNCT3_WIDTH-1:0] i_funct3
    ,  input  logic [1:0]              i_lsb_addr // just need two LSBs to evaluate

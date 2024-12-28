@@ -3,7 +3,7 @@
 
 -I./../00_src/
 -I./../01_bench/
-./../00_src/singlecycle_pkg.sv
+./../00_src/rv32i_pkg.sv
 ./../00_src/tournament.sv
 ./../00_src/evaluation.sv
 ./../00_src/hazard_ctrl.sv
@@ -19,7 +19,7 @@
 ./../00_src/regfile.sv
 ./../00_src/btn_debounce.sv
 ./../00_src/lcd_ctrl.sv
-./../00_src/singlecycle.sv
+./../00_src/rv32i.sv
 ./../00_src/TOP_SYNTH.sv
 
 # scoreboard
@@ -35,7 +35,7 @@
 
 # top testbench
 # ./../01_bench/alu/tbench.sv
-# ./../01_bench/singlecycle/tbench.sv
+# ./../01_bench/rv32i/tbench.sv
 ./../01_bench/TOP/tbench.sv
 
 ./conf.vlt

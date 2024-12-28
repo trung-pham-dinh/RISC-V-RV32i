@@ -1,5 +1,5 @@
 module scoreboard_regfile
-  import singlecycle_pkg::*;
+  import rv32i_pkg::*;
 (
     input logic                    i_clk    
   , input logic                    i_rst_n  

@@ -1,5 +1,5 @@
 module control 
-    import singlecycle_pkg::*;
+    import rv32i_pkg::*;
 (
     /* verilator lint_off UNUSEDSIGNAL */
       input  logic [31:0] i_inst

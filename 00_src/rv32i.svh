@@ -1,9 +1,9 @@
-`ifndef SINGLECYCLE_SVH
-`define SINGLECYCLE_SVH
+`ifndef RV32I_SVH
+`define RV32I_SVH
 
 // `define INST_MEM_PATH "./../02_test/dump/all_inst_and_lsu.mem"
-// `define INST_MEM_PATH "./../02_test/dump/cache_benchmark.mem"
-`define INST_MEM_PATH "./../02_test/dump/branch_pred_benchmark.mem"
+`define INST_MEM_PATH "./../02_test/dump/cache_benchmark.mem"
+// `define INST_MEM_PATH "./../02_test/dump/branch_pred_benchmark.mem"
 // `define INST_MEM_PATH "./../02_test/dump/cache.mem"
 // `define INST_MEM_PATH "./../02_test/dump/stopwatch.mem"
 // `define INST_MEM_PATH "./../02_test/dump/all_alu.mem"

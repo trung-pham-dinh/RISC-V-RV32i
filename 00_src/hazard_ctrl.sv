@@ -1,5 +1,5 @@
 module hazard_ctrl 
-  import singlecycle_pkg::*;
+  import rv32i_pkg::*;
 (
     input  logic i_is_pred_taken
   , input  logic i_is_jal_inst

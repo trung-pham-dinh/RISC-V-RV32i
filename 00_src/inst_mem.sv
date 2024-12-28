@@ -1,4 +1,4 @@
-`include "singlecycle.svh"
+`include "rv32i.svh"
 
 module inst_mem #(
     parameter ADDR_W = 32

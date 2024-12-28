@@ -1,5 +1,5 @@
 module alu 
-    import singlecycle_pkg::*;
+    import rv32i_pkg::*;
 (
       input  logic [31:0] i_operand_a
     , input  logic [31:0] i_operand_b

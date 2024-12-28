@@ -5,7 +5,7 @@
 `define FINISH      1150000
 
 module tbench
-  import singlecycle_pkg::*;
+  import rv32i_pkg::*;
 ();
 
 // Wave dumping
@@ -50,7 +50,7 @@ module tbench
   initial tsk_button_gen(i_io_btn);
   initial tsk_switch_gen(i_io_sw);
 
-  singlecycle #(
+  rv32i #(
       .INST_MEM_ADDR_W(10),
       .MEM_TYPE(MEM_FLOP ),
       .CACHE(1)

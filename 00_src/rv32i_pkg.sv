@@ -1,8 +1,8 @@
-`ifndef  SINGLECYCLEPKG_SV
-`define SINGLECYCLEPKG_SV
+`ifndef  RV32IPKG_SV
+`define RV32IPKG_SV
 `timescale 1ns/1ps
 
-package singlecycle_pkg;
+package rv32i_pkg;
 
     localparam FUNCT3_WIDTH = 3;
   /* verilator lint_off UNUSEDPARAM */

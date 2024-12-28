@@ -1,5 +1,5 @@
 module driver_alu
-    import singlecycle_pkg::*;
+    import rv32i_pkg::*;
 (
     input   logic        i_clk
   , output  logic [31:0] i_operand_a

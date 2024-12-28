@@ -1,4 +1,4 @@
-`include "singlecycle.svh"
+`include "rv32i.svh"
 
 module cache #(
     parameter TOTAL_ADDR_W  = 18,

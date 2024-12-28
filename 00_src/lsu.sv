@@ -1,5 +1,5 @@
 module lsu 
-   import singlecycle_pkg::*;
+   import rv32i_pkg::*;
 #(
    parameter MEM_TYPE = MEM_FLOP, // 0: flop-based, 1: sram-based
    parameter CACHE    = 1 

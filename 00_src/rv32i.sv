@@ -1,7 +1,7 @@
-`include "singlecycle.svh"
+`include "rv32i.svh"
 
-module singlecycle 
-    import singlecycle_pkg::*;
+module rv32i 
+    import rv32i_pkg::*;
 #(
     parameter INST_MEM_ADDR_W = 10, // FIXME: increase memsize 
     parameter MEM_TYPE = MEM_FLOP, // 0: flop-based, 1: sram-based
