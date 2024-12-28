@@ -101,8 +101,8 @@ module lsu
    generate
       if(CACHE) begin: g_cache
          cache #(
-            .OFFSET_ADDR_W(3),
-            .IDX_ADDR_W   (2) 
+            .OFFSET_ADDR_W(4),
+            .IDX_ADDR_W   (3) 
          ) cache (
             .i_clk      (i_clk       ), 
             .i_rst_n    (i_rst_n     ),   

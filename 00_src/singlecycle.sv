@@ -555,7 +555,8 @@ end
 
 evaluation #(
     .BR_THRSH_EVAL  (1000),
-    .IPC_THRSH_EVAL (1000)
+    .IPC_THRSH_EVAL (1000),
+    .MEM_PEN_THRSH_EVAL (100)
 ) evaluation (
     .i_clk               (i_clk  ),       
     .i_rst_n             (i_rst_n), 

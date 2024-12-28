@@ -2,6 +2,7 @@
 `define SINGLECYCLE_SVH
 
 // `define INST_MEM_PATH "./../02_test/dump/all_inst_and_lsu.mem"
+// `define INST_MEM_PATH "./../02_test/dump/cache_benchmark.mem"
 `define INST_MEM_PATH "./../02_test/dump/branch_pred_benchmark.mem"
 // `define INST_MEM_PATH "./../02_test/dump/cache.mem"
 // `define INST_MEM_PATH "./../02_test/dump/stopwatch.mem"
