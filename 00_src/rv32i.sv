@@ -429,7 +429,7 @@ always_comb begin
         EX_actual_taken  = ID_EX_dreg_q.inst[12] ^ br_eq;
     end
     EX_is_pred_wrong = (ID_EX_creg_q.is_br_inst)? EX_actual_taken ^ ID_EX_creg_q.is_pred_taken : 1'b0;
-    EX_is_jalr_inst = ID_EX_creg_q.is_jp_inst & (a_sel == A_REG);
+    EX_is_jalr_inst = ID_EX_creg_q.is_jp_inst & (ID_EX_creg_q.a_sel == A_REG);
 end
 
 // EX/MEM reg
